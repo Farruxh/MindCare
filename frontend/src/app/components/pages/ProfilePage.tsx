@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, User, Mail, Lock, Bell, Shield, Moon, Sun, LogOut } from "lucide-react";
+import { ArrowLeft, User, Mail, Lock, Bell, Moon, Sun, LogOut, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -23,8 +23,8 @@ interface formData {
 export function ProfilePage() {
   const [loader, setLoader] = useState(false)
   const [isEditProfile, setIsEditProfile] = useState(false)
-  const [ isEmailPreference, setIsEmailPreference ] = useState( () => {
-    return JSON.parse(localStorage.getItem("isEmailPreference") ?? "true")  
+  const [isEmailPreference, setIsEmailPreference] = useState(() => {
+    return JSON.parse(localStorage.getItem("isEmailPreference") ?? "true")
   })
   const { user, setUser, isLoading } = useAuth()
   const navigate = useNavigate();
@@ -73,6 +73,8 @@ export function ProfilePage() {
       const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
+      setIsDarkMode(false)
+      setUser(null)
       navigate("/");
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
@@ -93,9 +95,51 @@ export function ProfilePage() {
     }
   }
 
+  const handleOnAssessmentDelete = async () => {
+    try {
+      setLoader(true)
+      const res = await axios.delete("/api/v1/assessments/delete", { withCredentials: true })
+      setAlert({ message: res.data?.message || "Assessments deleted successfully", severity: "success" });
+    } catch (error: any) {
+      setAlert({ message: error.response?.data?.detail || "An error occurred while deleting assessments", severity: "error" });
+    } finally {
+      setLoader(false)
+    }
+  }
+
+  const handleSaveLocation = () => {
+    if (!navigator.geolocation) {
+      setAlert({ message: "Geolocation is not supported by your browser.", severity: "error" });
+      return;
+    }
+
+    setLoader(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const res = await axios.patch("/api/v1/users/update-location", { latitude, longitude }, { withCredentials: true });
+          if (res.data?.data) {
+            setUser(res.data.data);
+          }
+          setAlert({ message: "Location saved successfully!", severity: "success" });
+        } catch (error: any) {
+          console.error("Error saving location:", error);
+          setAlert({ message: error || "Failed to save location to your profile.", severity: "error" })
+        } finally {
+          setLoader(false);
+        }
+      },
+      (error) => {
+        setLoader(false);
+        setAlert({ message: "Unable to retrieve your location. Check your browser permissions.", severity: "error" });
+      }
+    );
+  };
+
+
   return (
     <div className="min-h-screen background">
-      {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 */}
       {loader && <Loader />}
       {/* Header */}
       <div className="bg-card backdrop-blur-sm border-b border-border px-6 py-4">
@@ -124,7 +168,6 @@ export function ProfilePage() {
         >
           <div className="sm:flex items-center gap-6 my-3">
             <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
-              {/* <User className="w-10 h-10 text-white" /> */}
               <span className="text-3xl font-semibold text-white uppercase">
                 {user?.name.split(" ").map((n) => n[0]).join("")}
               </span>
@@ -144,12 +187,9 @@ export function ProfilePage() {
             Edit Account
           </button>
         </motion.div>
-        {/* className="w-8 h-8 text-primary animate-spin" */}
 
         {/* Account Settings */}
         <motion.div
-          // initial={{ opacity: 0, y: 20 }}
-          // animate={{ opacity: 1, y: 0 }}
           initial={{ opacity: 0, y: -20 }}
           animate={isEditProfile ? { opacity: 1, y: 0 } : { opacity: 0, y: -20, display: "none" }}
           transition={{ delay: 0.1 }}
@@ -165,7 +205,6 @@ export function ProfilePage() {
                   <input
                     type="text"
                     defaultValue={user?.name || ""}
-                    // placeholder={user?.name || ""}
                     className="w-full pl-11 pr-4 py-3 bg-input-background text-gray-900 rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register1("name", { required: true })}
                   />
@@ -178,7 +217,6 @@ export function ProfilePage() {
                   <input
                     type="email"
                     defaultValue={user?.email || ""}
-                    // placeholder={user?.email || ""}
                     className="w-full pl-11 pr-4 py-3 bg-input-background text-gray-900 rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register1("email", { required: true })}
                   />
@@ -193,8 +231,6 @@ export function ProfilePage() {
 
         {/* Security */}
         <motion.div
-          // initial={{ opacity: 0, y: 20 }}
-          // animate={{ opacity: 1, y: 0 }}
           initial={{ opacity: 0, y: -20 }}
           animate={isEditProfile ? { opacity: 1, y: 0 } : { opacity: 0, y: -20, display: "none" }}
           transition={{ delay: 0.2 }}
@@ -209,7 +245,6 @@ export function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
                     type="password"
-                    // placeholder="Enter current password"
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("currentPassword", { required: true })}
                   />
@@ -221,7 +256,6 @@ export function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
                     type="password"
-                    // placeholder="Enter new password"
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("newPassword", { required: true })}
                   />
@@ -233,7 +267,6 @@ export function ProfilePage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
                     type="password"
-                    // placeholder="Confirm new password"
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("confirmPassword", { required: true })}
                   />
@@ -266,14 +299,14 @@ export function ProfilePage() {
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={isEmailPreference} 
-                onChange={() => {
-                  setIsEmailPreference(!isEmailPreference)
-                  localStorage.setItem("isEmailPreference", JSON.stringify(!isEmailPreference))
-                }}
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={isEmailPreference}
+                  onChange={() => {
+                    setIsEmailPreference(!isEmailPreference)
+                    localStorage.setItem("isEmailPreference", JSON.stringify(!isEmailPreference))
+                  }}
                 />
                 <div className="w-14 h-7 bg-muted peer-checked:bg-slate-700 dark:peer-checked:bg-slate-500 rounded-full transition-colors duration-300" />
                 <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-7 transition-all duration-300" />
@@ -281,17 +314,20 @@ export function ProfilePage() {
             </div>
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
               <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-muted-foreground" />
+                <MapPin className="w-5 h-5 text-muted-foreground" />
                 <div>
-                  <div className="text-foreground">Privacy Mode</div>
-                  <div className="text-sm text-muted-foreground">Enhanced data protection</div>
+                  <div className="text-foreground">Current Location</div>
+                  <div className="text-sm text-muted-foreground">Get nearby clinic recommendations</div>
                 </div>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-14 h-7 bg-muted peer-checked:bg-slate-700 dark:peer-checked:bg-slate-500 rounded-full transition-colors duration-300" />
-                <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-7 transition-all duration-300" />
-              </label>
+              <button
+                type="button"
+                onClick={handleSaveLocation}
+                className="px-4 py-2 bg-muted hover:bg-primary dark:hover:bg-muted/60 hover:text-white rounded-xl transition-all duration-300 font-medium text-sm flex items-center justify-center gap-2 group cursor-pointer shadow-sm hover:shadow-md"
+              >
+                <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                Save My Current Location
+              </button>
             </div>
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
               <div className="flex items-center gap-3">
@@ -308,7 +344,6 @@ export function ProfilePage() {
                   checked={isDarkMode}
                   onChange={() => {
                     setIsDarkMode(!isDarkMode)
-                    localStorage.setItem("darkMode", JSON.stringify(!isEmailPreference))
                   }}
                 />
                 <div className="w-14 h-7 bg-muted peer-checked:bg-primary rounded-full transition-colors duration-300" />
@@ -339,6 +374,11 @@ export function ProfilePage() {
             >
               <LogOut className="w-5 h-5" />
               Log Out
+            </button>
+            <button
+              onClick={() => handleOnAssessmentDelete()}
+              className="w-full px-5 py-3 border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-300 cursor-pointer">
+              Delete All Assessments
             </button>
             <button
               onClick={() => handleOnDelete()}

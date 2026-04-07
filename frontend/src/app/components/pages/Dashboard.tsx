@@ -1,23 +1,13 @@
 import { motion } from "motion/react";
-import { Brain, MessageCircle, ClipboardList, Sparkles, MapPin, User, LogOut, BookOpen } from "lucide-react";
+import { Brain, MessageCircle, ClipboardList, Sparkles, MapPin, User, LogOut, BookOpen, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext"
-import { useTheme } from "../../context/ThemeContext"
 import { useEffect, useState } from "react"
 import Loader from "../loader/loader";
 
-
-const mockAssessmentData = [
-  { date: "Jan 1", score: 12 },
-  { date: "Jan 8", score: 15 },
-  { date: "Jan 15", score: 10 },
-  { date: "Jan 22", score: 8 },
-  { date: "Jan 29", score: 6 },
-  { date: "Feb 5", score: 9 }
-];
 
 const recentSessions = [
   { id: 1, date: "2 hours ago", topic: "Stress Assessment", duration: "25 min" },
@@ -30,8 +20,7 @@ export function Dashboard() {
   const navigate = useNavigate()
   const { user, isLoading } = useAuth()
   const { setAlert } = useAlert();
-  const { setIsDarkMode } = useTheme()
-  const [ loader, setLoader ] = useState(false)
+  const [loader, setLoader] = useState(false)
   const [assessmentHistory, setAssessmentHistory] = useState<{
     created_at: string;
     anxiety_score: number | null;
@@ -39,9 +28,9 @@ export function Dashboard() {
     stress_score: number | null;
   }[]>([])
 
-  useEffect( () => {
+  useEffect(() => {
     if (!isLoading && !user) navigate("/login")
-  } , [isLoading ,user])
+  }, [isLoading, user])
 
   useEffect(() => {
     const getAssessmentHistory = async () => {
@@ -49,7 +38,7 @@ export function Dashboard() {
         const res = await axios.get("/api/v1/assessments/my-assessment", { withCredentials: true })
         setAssessmentHistory(res.data.data ?? [])
       } catch (error: any) {
-        setAlert({message: error.response.data?.detail || "Unable to fetch assessment history" , severity: "error"} );
+        setAlert({ message: error.response.data?.detail || "Unable to fetch assessment history", severity: "error" });
       }
     }
     getAssessmentHistory()
@@ -71,7 +60,7 @@ export function Dashboard() {
       navigate("/");
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
-    } finally{
+    } finally {
       setLoader(false)
     }
   }
@@ -79,18 +68,17 @@ export function Dashboard() {
   const handleOnClick = async () => {
     try {
       setLoader(true)
-      const res = await axios.post("/api/v1/chats/", { withCredentials: true})
+      const res = await axios.post("/api/v1/chats/", { withCredentials: true })
       const chat_id = res.data?.data.chat_id
       navigate(`/assistant/${chat_id}`)
     } catch (error: any) {
       console.log(error.response?.data?.detail);
-    } finally{
+    } finally {
       setLoader(false)
     }
   }
 
   return (
-    // bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100
     <div className="min-h-screen background ">
       {loader && <Loader />}
       {/* Header */}
@@ -150,7 +138,7 @@ export function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + index * 0.05 }}
-              onClick={() => action.path == "/assistant" ? handleOnClick() : navigate(action.path) }
+              onClick={() => action.path == "/assistant" ? handleOnClick() : navigate(action.path)}
               className="bg-card p-6 rounded-2xl shadow-sm hover:shadow-lg border border-border hover:border-primary/30 transition-all duration-300 group cursor-pointer"
             >
               <div className={`${action.color} text-white p-3 rounded-xl inline-flex mb-3 group-hover:scale-110 transition-transform duration-300`}>
@@ -170,29 +158,45 @@ export function Dashboard() {
             className="lg:col-span-2 bg-card rounded-2xl shadow-sm border border-border p-6"
           >
             <h3 className="mb-6 text-foreground">Assessment Progress</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e8eaed" />
-                <XAxis dataKey="date" stroke="#6c757d" />
-                <YAxis stroke="#6c757d" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #e8eaed",
-                    borderRadius: "12px",
-                    padding: "12px"
-                  }}
-                />
-                <Line type="monotone" dataKey="stress" stroke="#DC2626" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
-                <Line type="monotone" dataKey="depression" stroke="#1E3A5F" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
-                <Line type="monotone" dataKey="anxiety" stroke="#4B5563" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-            <div className="mt-4 p-4 bg-muted/30 rounded-xl">
-              <p className="text-sm text-muted-foreground">
-                <span className="text-primary">Great progress!</span> Your scores show improvement over the past month. Keep up with your self-care routine.
-              </p>
-            </div>
+            {chartData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e8eaed" />
+                    <XAxis dataKey="date" stroke="#6c757d" />
+                    <YAxis stroke="#6c757d" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #e8eaed",
+                        borderRadius: "12px",
+                        padding: "12px"
+                      }}
+                    />
+                    <Line type="monotone" dataKey="stress" stroke="#DC2626" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
+                    <Line type="monotone" dataKey="depression" stroke="#1E3A5F" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
+                    <Line type="monotone" dataKey="anxiety" stroke="#4B5563" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div className="mt-4 p-4 bg-muted/30 rounded-xl">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="text-primary">Great progress!</span> Your scores show improvement over the past month. Keep up with your self-care routine.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-22 px-8 gap-6 text-center">
+                <div className="w-18 h-18 rounded-full bg-muted border border-border flex items-center justify-center">
+                  <Activity className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <div className="flex flex-col gap-2 max-w-xs">
+                  <p className="text-base font-medium text-foreground">No progress data yet</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Complete your first assessment to start tracking your mental wellness journey over time.
+                  </p>
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Recent Sessions */}
@@ -237,7 +241,7 @@ export function Dashboard() {
                 Take 5 minutes today for deep breathing. It can help reduce stress and improve focus. Try our guided meditation exercises to get started.
               </p>
               <button
-                // onClick={() => onNavigate("meditation")}
+                onClick={() => navigate("/meditation")}
                 className="mt-4 px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
               >
                 Try Now
