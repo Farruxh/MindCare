@@ -4,7 +4,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAlert } from "../../context/AlertContext.tsx";
-import { PuffLoader } from "react-spinners"
+import { useAuth } from "../../context/AuthContext"
 import { useState } from "react"
 import Loader from "../loader/loader.tsx";
 
@@ -18,12 +18,14 @@ export function LoginPage() {
   const { register, handleSubmit } = useForm<formData>();
   const navigate = useNavigate()
   const { setAlert } = useAlert();
+  const { setUser} = useAuth()
 
   const handleOnSubmit: SubmitHandler<formData> = async (data) => {
     try {
       setLoader(true)
       const res = await axios.post("/api/v1/users/login", data, { withCredentials: true });
       setAlert({ message: res.data?.message || "Login successfully", severity: "success" });
+      setUser(res.data.data)
       navigate("/dashboard");
     } catch (error: any) {
       setAlert({ message: error.response.data?.detail || "An error occurred while logging in", severity: "error" });
@@ -84,7 +86,7 @@ export function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end text-sm">
+            <div className="flex items-center justify-center text-sm">
               <button
                 onClick={() => navigate("/forgot-password")}
                 className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
