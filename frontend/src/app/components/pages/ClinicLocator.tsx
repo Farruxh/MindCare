@@ -7,9 +7,6 @@ import { useAlert } from "../../context/AlertContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate} from "react-router-dom"
 
-interface ClinicLocatorProps {
-  onNavigate?: (page: string) => void;
-}
 
 interface Clinic {
   name: string;
@@ -18,7 +15,7 @@ interface Clinic {
   mapUrl: string;
 }
 
-export function ClinicLocator({ onNavigate }: ClinicLocatorProps) {
+export function ClinicLocator() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loader, setIsLoader] = useState(false)
   const navigate = useNavigate();
@@ -42,14 +39,12 @@ export function ClinicLocator({ onNavigate }: ClinicLocatorProps) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        console.log(position)
         try {
           const res = await axios.get("/api/v1/clinics/nearest", {
             params: { user_lat: latitude, user_lon: longitude },
             withCredentials: true
           });
           const data = res.data.data;
-          console.log(data);
 
           if (data && data.length > 0) {
             setClinics(
@@ -79,10 +74,8 @@ export function ClinicLocator({ onNavigate }: ClinicLocatorProps) {
   };
 
   const handleStoredLocationSearch = async () => {
-    const lat = user?.latitute;
+    const lat = user?.latitude;
     const lon = user?.longitude;
-    console.log(lat, lon);
-    
 
     if (!lat || !lon) {
       setAlert({ message: "No stored location found in your profile.", severity: "error" });
@@ -122,7 +115,6 @@ export function ClinicLocator({ onNavigate }: ClinicLocatorProps) {
 
   return (
     <div className="h-screen background flex flex-col">
-      {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 */}
       {/* Header */}
       {loader && <Loader />}
       <motion.div

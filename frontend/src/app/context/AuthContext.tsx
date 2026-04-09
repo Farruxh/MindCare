@@ -6,6 +6,9 @@ interface userType {
     user_id: number
     name: string
     email: string
+    latitude: number
+    longitude: number
+    created_at: string
 }
 
 interface userContextType{
