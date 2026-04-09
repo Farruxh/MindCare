@@ -117,8 +117,9 @@ export function ProfilePage() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        const data = { latitude, longitude }
         try {
-          const res = await axios.patch("/api/v1/users/update-location", { latitude, longitude }, { withCredentials: true });
+          const res = await axios.patch("/api/v1/users/update-account", data, { withCredentials: true });
           if (res.data?.data) {
             setUser(res.data.data);
           }
