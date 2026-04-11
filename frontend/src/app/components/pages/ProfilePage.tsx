@@ -32,6 +32,7 @@ export function ProfilePage() {
   const { register: register1, handleSubmit: handleSubmit1 } = useForm<accountFormData>()
   const { register: register, handleSubmit: handleSubmit } = useForm<formData>()
   const { isDarkMode, setIsDarkMode } = useTheme()
+  const memberSince = user ?  new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
 
   useEffect(() => {
     if (!isLoading && !user) navigate("/login")
@@ -176,6 +177,7 @@ export function ProfilePage() {
             <div>
               <h3 className="text-xl text-foreground mb-1">{user?.name}</h3>
               <p className="text-muted-foreground">{user?.email}</p>
+              <p className="text-muted-foreground"><b>Member Since:</b> {memberSince} </p>
             </div>
           </div>
           <button
