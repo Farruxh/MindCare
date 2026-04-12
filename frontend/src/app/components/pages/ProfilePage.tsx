@@ -166,18 +166,18 @@ export function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-card rounded-2xl shadow-sm border border-border p-8 mb-6 md:flex items-center justify-between  bg-gradient-to-r from-primary/10 to-secondary/10"
+          className="bg-card rounded-2xl shadow-sm border border-border p-8 mb-6 flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-0 bg-gradient-to-r from-primary/10 to-secondary/10 text-center md:text-left"
         >
-          <div className="sm:flex items-center gap-6 my-3">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center">
-              <span className="text-3xl font-semibold text-white uppercase">
+          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 mt-2 md:mt-0">
+            <div className="w-24 h-24 md:w-20 md:h-20 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center shadow-md md:shadow-none transition-all">
+              <span className="text-4xl md:text-3xl font-semibold text-white uppercase transition-all">
                 {user?.name.split(" ").map((n) => n[0]).join("")}
               </span>
             </div>
-            <div>
-              <h3 className="text-xl text-foreground mb-1">{user?.name}</h3>
-              <p className="text-muted-foreground">{user?.email}</p>
-              <p className="text-muted-foreground"><b>Member Since:</b> {memberSince} </p>
+            <div className="sm:text-left text-center">
+              <h3 className="text-2xl md:text-xl font-medium text-foreground mb-1 transition-all">{user?.name}</h3>
+              <p className="text-muted-foreground mb-1 md:mb-0 transition-all">{user?.email}</p>
+              <p className="text-sm md:text-base text-muted-foreground transition-all"><b>Member Since:</b> {memberSince}</p>
             </div>
           </div>
           <button
@@ -315,7 +315,7 @@ export function ProfilePage() {
                 <span className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-7 transition-all duration-300" />
               </label>
             </div>
-            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-muted/30 rounded-xl">
               <div className="flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-muted-foreground" />
                 <div>
@@ -326,7 +326,7 @@ export function ProfilePage() {
               <button
                 type="button"
                 onClick={handleSaveLocation}
-                className="px-4 py-2 bg-muted hover:bg-primary dark:hover:bg-muted/60 hover:text-white rounded-xl transition-all duration-300 font-medium text-sm flex items-center justify-center gap-2 group cursor-pointer shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto px-4 py-2 bg-muted hover:bg-primary dark:hover:bg-muted/60 hover:text-white rounded-xl transition-all duration-300 font-medium text-sm flex items-center justify-center gap-2 group cursor-pointer shadow-sm hover:shadow-md"
               >
                 <MapPin className="w-4 h-4 group-hover:scale-110 transition-transform" />
                 Save My Current Location

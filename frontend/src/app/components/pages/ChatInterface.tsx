@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Send, Bot, User, ArrowLeft, PanelRight, Plus, MessageSquare, Trash } from "lucide-react";
+import { Send, Bot, User, ArrowLeft, PanelRight, Plus, MessageSquare, X, Trash } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom"
 import axios from "axios";
@@ -56,7 +56,7 @@ export function ChatInterface() {
 
   const handleCreateChat = async () => {
     try {
-      const res = await axios.post("/api/v1/chats/", { withCredentials: true})
+      const res = await axios.post("/api/v1/chats/", { withCredentials: true })
       const chat_id = res.data?.data.chat_id
       navigate(`/assistant/${chat_id}`)
     } catch (error: any) {
@@ -78,11 +78,11 @@ export function ChatInterface() {
     }
   }, [chat_id])
 
-  const handleOnDelete = async(chat_id: number) => {
+  const handleOnDelete = async (chat_id: number) => {
     try {
       await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
-      
+
     } catch (error: any) {
       console.log(error.response.detail);
     }
@@ -125,14 +125,13 @@ export function ChatInterface() {
     <motion.div
       animate={{ marginRight: isSideBarOpen ? "320px" : "0px" }}
       transition={{ duration: 0.3 }}
-      className="h-screen background  flex flex-col"
-    > 
-    {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 */}
+      className="h-screen background flex flex-col"
+    >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card backdrop-blur-sm border-b border-border px-6 py-4 flex items-center gap-4 shadow-sm"
+        className="bg-card backdrop-blur-sm border-b border-border px-6 py-4 flex items-center gap-2 shadow-sm"
       >
         <button
           className="p-2 hover:bg-muted rounded-xl transition-colors cursor-pointer"
@@ -167,6 +166,12 @@ export function ChatInterface() {
       >
         {/* New Chat Button */}
         <div className="p-4 border-b border-border">
+          <button
+            className="pt-2 hover:scale-105 transition-transform cursor-pointer block lg:hidden"
+            onClick={() => setIsSideBarOpen((prev) => !prev)}
+          >
+            <X className="w-6 h-6 text-primary"/>
+          </button>
           <motion.button
             className="mx-auto mt-20 mb-20 flex items-center gap-1 cursor-pointer text-primary hover:scale-105 transition-transform"
             onClick={() => handleCreateChat()}
@@ -188,15 +193,15 @@ export function ChatInterface() {
               className="group w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer text-left"
             >
               <MessageSquare className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm text-foreground truncate flex-1">
+              <span className="text-sm text-foreground truncate flex-1 hover:scale-105 transition-transform">
                 Chat {chats.length - index}
               </span>
-              <Trash 
-              className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity " 
-              onClick={(e) =>  {
-                e.stopPropagation()
-                handleOnDelete(chat.chat_id)
-              }}
+              <Trash
+                className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 hover:scale-105 transition-transform"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleOnDelete(chat.chat_id)
+                }}
               />
             </button>
           ))}

@@ -2,12 +2,9 @@ import { motion } from "motion/react";
 import { Brain, MessageCircle, ClipboardList, MapPin, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-interface LandingPageProps {
-  onNavigate: (page: string) => void;
-}
-
 export function LandingPage() {
   const navigate = useNavigate();
+  
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -19,25 +16,21 @@ export function LandingPage() {
       icon: <MessageCircle className="w-6 h-6" />,
       title: "Start Chat",
       description: "Connect with our AI therapist for personalized support",
-      onClick: () => navigate("login")  //chat page navigation
     },
     {
       icon: <ClipboardList className="w-6 h-6" />,
       title: "Self-Assessment",
       description: "Evaluate your mental well-being with guided questions",
-      onClick: () => navigate("login")  //assessment page navigation
     },
     {
       icon: <Sparkles className="w-6 h-6" />,
       title: "Meditation Exercises",
       description: "Find peace with guided relaxation techniques",
-      onClick: () => navigate("login")  //meditation page navigation
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Clinic Locator",
       description: "Discover mental health professionals near you",
-      onClick: () => navigate("login")  //clinic locator page navigation
     }
   ];
 
@@ -100,8 +93,7 @@ export function LandingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              onClick={feature.onClick}
-              className="group bg-card p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 text-left border border-border hover:border-primary/30 cursor-pointer"
+              className="group bg-card p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 text-left border border-border hover:border-primary/30"
             >
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
