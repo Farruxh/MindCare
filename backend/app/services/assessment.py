@@ -34,7 +34,7 @@ async def create_assessment(db: Session, assessment_data: AssessmentCreate, curr
                 body=f"""
 Hi {user.name},
 
-Your latest results:
+Your latest assessment results:
 🧠 Anxiety:    {assessment_data.anxiety_score} ({assessment_data.anxiety_severity})
 😔 Depression: {assessment_data.depression_score} ({assessment_data.depression_severity})
 😤 Stress:     {assessment_data.stress_score} ({assessment_data.stress_severity})
@@ -56,8 +56,12 @@ def get_all_assessments_of_user(db: Session, current_user: int):
 def get_last_assessment(db: Session, current_user: int):
     return db.query(Assessment_Result).filter(Assessment_Result.user_id == current_user).order_by(Assessment_Result.created_at.desc()).first()
 
-def delete_assessments(db: Session):
-    assessment = db.query(Assessment_Result).all()
-    for assess in assessment:
-        db.delete(assess)
-    db.commit()
+def delete_assessments(db: Session, current_user: int):
+    assessments = db.query(Assessment_Result).filter(Assessment_Result.user_id == current_user).all()
+    try:
+        for assessment in assessments:
+            db.delete(assessment)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
