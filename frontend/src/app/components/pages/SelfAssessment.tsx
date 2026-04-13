@@ -144,7 +144,6 @@ export function SelfAssessment() {
     if (currentQuestion < questionsWithTypes.length - 1) {
       setTimeout(() => setCurrentQuestion((q) => q + 1), 300);
     } else {
-      // scores calculate karo
       const scores: Record<string, number> = {};
       const severities: Record<string, string> = {};
       selectedTypes.forEach((t) => {
@@ -153,13 +152,11 @@ export function SelfAssessment() {
         severities[t] = getSeverityForType(t, scores[t]);
       });
 
-      // ── DB CALL HERE ──
       await handleSaveResults(scores, severities);
       setTimeout(() => setShowResults(true), 300);
     }
   };
 
-  // ─── DB Save Handler ─────────────────────────────────────────────────────────
   const handleSaveResults = async (
     scores: Record<string, number>,
     severities: Record<string, string>,
@@ -213,7 +210,6 @@ export function SelfAssessment() {
   if (!started) {
     return (
       <div className="min-h-screen background">
-        {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 px-6 py-8 */}
         {loader && <Loader />}
 
         <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
@@ -284,7 +280,7 @@ export function SelfAssessment() {
             <button
               onClick={startAssessment}
               disabled={selectedTypes.length === 0}
-              className="w-full py-4 bg-muted text-primary-foreground rounded-xl hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
+              className="w-full py-4 bg-primary text-primary-foreground rounded-xl hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
             >
               Start Assessment ({selectedTypes.length} selected)
             </button>
@@ -310,7 +306,6 @@ export function SelfAssessment() {
 
     return (
       <div className="min-h-screen background">
-        {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 px-6 py-8 */}
         {loader && <Loader />}
         <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
           <div className="max-w-4xl mx-auto flex justify-between items-center">
@@ -423,7 +418,7 @@ export function SelfAssessment() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleOnClick()}
-                className="py-3 bg-muted text-primary-foreground rounded-xl hover:bg-primary dark:hover:bg-muted/80 transition-all duration-300 cursor-pointer"
+                className="py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/80 dark:hover:bg-muted/80 transition-all duration-300 cursor-pointer"
               >
                 Talk to AI
               </button>
@@ -431,7 +426,7 @@ export function SelfAssessment() {
                 onClick={hasSevereResult ? handleOnMapClick : undefined}
                 disabled={!hasSevereResult}
                 className={`py-3 rounded-xl transition-all duration-300 ${hasSevereResult
-                  ? "bg-primary text-secondary-foreground hover:bg-primary/90 cursor-pointer"
+                  ? "bg-primary text-secondary-foreground hover:bg-primary/80 cursor-pointer"
                   : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
                   }`}
               >
@@ -452,17 +447,19 @@ export function SelfAssessment() {
   // ─── Question Screen ─────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen background">
-      {/* bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 px-6 py-8 */}
       {loader && <Loader />}
+      <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5 mb-4">
+          <div className="max-w-4xl mx-auto flex justify-between items-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
       <div className="max-w-2xl mx-auto">
-        <button
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Dashboard
-        </button>
-
         {/* Progress */}
         <div className="mb-8">
           <div className="flex justify-between mb-2">
