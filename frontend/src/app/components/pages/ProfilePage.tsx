@@ -8,6 +8,7 @@ import { useAlert } from "../../context/AlertContext";
 import { useForm, SubmitHandler } from "react-hook-form"
 import Loader from "../loader/loader";
 import { useTheme } from "../../context/ThemeContext"
+import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 
 interface accountFormData {
   name: string
@@ -22,6 +23,16 @@ interface formData {
 
 export function ProfilePage() {
   const [loader, setLoader] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    text: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    onConfirm: () => { },
+  });
+  const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }));
+  
   const [isEditProfile, setIsEditProfile] = useState(false)
   const [isEmailPreference, setIsEmailPreference] = useState(() => {
     return JSON.parse(localStorage.getItem("isEmailPreference") ?? "true")
@@ -32,7 +43,7 @@ export function ProfilePage() {
   const { register: register1, handleSubmit: handleSubmit1 } = useForm<accountFormData>()
   const { register: register, handleSubmit: handleSubmit } = useForm<formData>()
   const { isDarkMode, setIsDarkMode } = useTheme()
-  const memberSince = user ?  new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
+  const memberSince = user ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
 
   const handleUpdateAccountDetail: SubmitHandler<accountFormData> = async (data) => {
     try {
@@ -222,7 +233,23 @@ export function ProfilePage() {
                 </div>
               </div>
             </div>
-            <button className="w-full px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer">
+            <button
+              type="submit"
+              className="w-full px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
+              onClick={() => {
+                setConfirmDialog({
+                  open: true,
+                  title: "Confirm Update Account Information",
+                  text: "Are you sure you want to update your account information?",
+                  confirmText: "Update",
+                  cancelText: "Cancel",
+                  onConfirm: () => {
+                    closeConfirmDialog();
+                    handleLogOut();
+                  }
+                })
+              }}
+            >
               Update Account Information
             </button>
           </form>
@@ -273,7 +300,21 @@ export function ProfilePage() {
               </div>
               <button
                 type="submit"
-                className="px-5 py-2 mt-2 w-full bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer">
+                className="px-5 py-2 mt-2 w-full bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
+                onClick={() => {
+                  setConfirmDialog({
+                    open: true,
+                    title: "Confirm Update Current Password",
+                    text: "Are you sure you want to update your current password?",
+                    confirmText: "Update",
+                    cancelText: "Cancel",
+                    onConfirm: () => {
+                      closeConfirmDialog();
+                      handleLogOut();
+                    }
+                  })
+                }}
+              >
                 Update Password
               </button>
             </div>
@@ -368,25 +409,65 @@ export function ProfilePage() {
           <h3 className="mb-6 text-foreground">Account Actions</h3>
           <div className="space-y-3">
             <button
-              onClick={() => handleLogOut()}
+              onClick={() => setConfirmDialog({
+                open: true,
+                title: "Confirm Logout",
+                text: "Are you sure you want to log out of your account?",
+                confirmText: "Log Out",
+                cancelText: "Cancel",
+                onConfirm: () => {
+                  closeConfirmDialog();
+                  handleLogOut();
+                }
+              })}
               className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-muted hover:bg-primary dark:hover:bg-muted/80 hover:text-white rounded-xl transition-all duration-300 cursor-pointer"
             >
               <LogOut className="w-5 h-5" />
               Log Out
             </button>
             <button
-              onClick={() => handleOnAssessmentDelete()}
+              onClick={() => setConfirmDialog({
+                open: true,
+                title: "Delete All Assessments",
+                text: "Are you sure you want to delete all your assessments? This action cannot be undone.",
+                confirmText: "Delete",
+                cancelText: "Cancel",
+                onConfirm: () => {
+                  closeConfirmDialog();
+                  handleOnAssessmentDelete();
+                }
+              })}
               className="w-full px-5 py-3 border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-300 cursor-pointer">
               Delete All Assessments
             </button>
             <button
-              onClick={() => handleOnDelete()}
+              onClick={() => setConfirmDialog({
+                open: true,
+                title: "Delete Account",
+                text: "Are you sure you want to permanently delete your account? This cannot be undone.",
+                confirmText: "Delete Account",
+                cancelText: "Cancel",
+                onConfirm: () => {
+                  closeConfirmDialog();
+                  handleOnDelete();
+                }
+              })}
               className="w-full px-5 py-3 border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-300 cursor-pointer">
               Delete Account
             </button>
           </div>
         </motion.div>
       </div>
+
+      <GlobalConfirmBox
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        text={confirmDialog.text}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={closeConfirmDialog}
+      />
     </div>
   );
 }
