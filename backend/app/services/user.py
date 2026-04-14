@@ -150,11 +150,22 @@ def reset_password(db: Session, data: UserResetPassword, reset_token: str):
     return {"message": "Password reset successfully"}
 
 def refreshAccessToken(db: Session, incomingRefreshToken: str):
-    user = db.query(User).filter(User.refresh_token == pasword_hash(incomingRefreshToken)).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-    access_token, refresh_token = generateAccessAndRefreshTokens(db, user)
-    return access_token, refresh_token
+    try:
+        # 1. Decode token to get user identifier
+        payload = jwt.decode(incomingRefreshToken, settings.REFRESH_TOKEN_SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id = payload.get("sub")
+        
+        # 2. Fetch user from DB
+        user = db.query(User).filter(User.user_id == int(user_id)).first()
+        
+        # 3. Verify the hashed token using the hasher verify method
+        if not user or not password_hasher.verify(incomingRefreshToken, user.refresh_token):
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+        access_token, refresh_token = generateAccessAndRefreshTokens(db, user)    
+        return access_token, refresh_token
+    except Exception:
+        raise HTTPException(status_code=401, detail="Refresh token expired or invalid")
 
 def updateAccountDetails(db: Session, id: int, data: UserUpdate):
     user = db.query(User).filter(User.user_id == id).first()

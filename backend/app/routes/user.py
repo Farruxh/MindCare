@@ -131,8 +131,8 @@ def update_account(
 
 @router.patch("/update-current-password", response_model = ApiResponse[UserResponse])
 def updatePassword(data: UserPasswordUpdate, db: Session = Depends(get_db), current_user: int = Depends(auth_dependency)):
-    updateCurrentPassword(db, current_user, data)
-    return ApiResponse(status_code=200, message="Password Updated Successfully")
+    user = updateCurrentPassword(db, current_user, data)
+    return ApiResponse(status_code=200, data=user, message="Password Updated Successfully")
 
 @router.delete("/delete-account", response_model = ApiResponse[UserResponse])
 def user_delete(db: Session = Depends(get_db), current_user = Depends(auth_dependency)):
