@@ -47,7 +47,7 @@ export function ChatInterface() {
           const res = await axios.get("/api/v1/chats/all", { withCredentials: true })
           setChats(res.data?.data)
         } catch (error: any) {
-          console.log(error.response?.detail);
+          console.log(error.response?.data?.detail);
         }
       }
       fetchChatHistory()
@@ -84,7 +84,7 @@ export function ChatInterface() {
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
 
     } catch (error: any) {
-      console.log(error.response.detail);
+      console.log(error.response?.data?.detail);
     }
   }
 
