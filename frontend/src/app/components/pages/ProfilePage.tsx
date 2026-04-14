@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowLeft, User, Mail, Lock, Bell, Moon, Sun, LogOut, MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext"
@@ -33,10 +33,6 @@ export function ProfilePage() {
   const { register: register, handleSubmit: handleSubmit } = useForm<formData>()
   const { isDarkMode, setIsDarkMode } = useTheme()
   const memberSince = user ?  new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
-
-  useEffect(() => {
-    if (!isLoading && !user) navigate("/login")
-  }, [isLoading, user])
 
   const handleUpdateAccountDetail: SubmitHandler<accountFormData> = async (data) => {
     try {
