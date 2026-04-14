@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext"
 import { useEffect, useState } from "react"
 import Loader from "../loader/loader";
+import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 
 const recentSessions = [
   { id: 1, date: "2 hours ago", topic: "Stress Assessment", duration: "25 min" },
@@ -26,6 +27,15 @@ export function Dashboard() {
     depression_score: number | null;
     stress_score: number | null;
   }[]>([])
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    text: "",
+    confirmText: "confirm",
+    cancelText: "cancel",
+    onConfirm: () => { }
+  })
+  const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }))
 
   useEffect(() => {
     const getAssessmentHistory = async () => {
@@ -93,7 +103,20 @@ export function Dashboard() {
             </button>
             <button
               title="Log out"
-              onClick={() => handleOnLogout()}
+              type="button"
+              onClick={() => {
+                setConfirmDialog({
+                  open: true,
+                  title: "Confirm Logout",
+                  text: "Are you sure you want to log out of your account??",
+                  confirmText: "Logout",
+                  cancelText: "Cancel",
+                  onConfirm: () => { 
+                    closeConfirmDialog()
+                    handleOnLogout()
+                  }
+                });
+              }}
               className="p-2 hover:bg-muted rounded-xl transition-colors cursor-pointer"
             >
               <LogOut className="w-5 h-5" />
@@ -245,6 +268,16 @@ export function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      <GlobalConfirmBox 
+       open={confirmDialog.open}
+       title={confirmDialog.title}
+       text={confirmDialog.text}
+       confirmText={confirmDialog.confirmText}
+       cancelText={confirmDialog.cancelText}
+       onConfirm={confirmDialog.onConfirm}
+       onCancel={closeConfirmDialog}
+      />
     </div>
   );
 }

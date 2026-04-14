@@ -28,8 +28,7 @@ export function LoginPage() {
       setUser(res.data.data)
       navigate("/dashboard");
     } catch (error: any) {
-      setAlert({ message: error.response.data?.detail || "An error occurred while logging in", severity: "error" });
-      navigate("/login")
+      setAlert({ message: error.response?.data?.detail || "An error occurred while logging in", severity: "error" });
     } finally { setLoader(false) }
   }
 
@@ -88,6 +87,7 @@ export function LoginPage() {
 
             <div className="flex items-center justify-center text-sm">
               <button
+                type="button"
                 onClick={() => navigate("/forgot-password")}
                 className="text-primary hover:text-primary/80 transition-colors cursor-pointer"
               >
