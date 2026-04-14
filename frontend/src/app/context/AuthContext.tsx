@@ -14,7 +14,7 @@ interface userType {
 interface userContextType{
     user: userType | null
     setUser: (user: userType | null) => void
-    isLoading: Boolean
+    isLoading: boolean
 }
 
 const AuthContext = createContext< userContextType | null >(null)
@@ -30,13 +30,46 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 const res = await axios.get("/api/v1/users/me", { withCredentials: true });
                 setUser(res.data.data);
             } catch (error: any) {
-                setAlert({ message: error.response.data?.detail || "Failed to fetch user data", severity: "error" });
-                setUser(null)
+                if (error.response?.status === 401) {
+                    try {
+                        await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
+                        
+                        const retryRes = await axios.get("/api/v1/users/me", { withCredentials: true });
+                        setUser(retryRes.data.data);
+                        return; 
+                    } catch (refreshError) {
+                        setAlert({message : "Session expired. Please log in again.", severity: "error"});
+                        setUser(null);
+                    }
+                } else {
+                    setAlert({message : "An error occurred while fetching user data.", severity: "error"});
+                    setUser(null);
+                }
             } finally{
                 setIsLoading(false)
             }
         }
         fetchUser()
+
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                if (error.response?.status === 401 && !error.config._retry) {
+                    error.config._retry = true;
+                    try {
+                        await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
+                        return axios(error.config);
+                    } catch (e) {
+                        setAlert({message : "Session expired. Please log in again.", severity: "error"});
+                        setUser(null);
+                        return Promise.reject(e);
+                    }
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => axios.interceptors.response.eject(interceptor);
     }, [])
 
     return(
