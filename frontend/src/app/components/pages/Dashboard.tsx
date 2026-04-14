@@ -8,7 +8,6 @@ import { useAlert } from "../../context/AlertContext"
 import { useEffect, useState } from "react"
 import Loader from "../loader/loader";
 
-
 const recentSessions = [
   { id: 1, date: "2 hours ago", topic: "Stress Assessment", duration: "25 min" },
   { id: 2, date: "Yesterday", topic: "Anxiety Relief", duration: "18 min" },
@@ -27,10 +26,6 @@ export function Dashboard() {
     depression_score: number | null;
     stress_score: number | null;
   }[]>([])
-
-  useEffect(() => {
-    if (!isLoading && !user) navigate("/login")
-  }, [isLoading, user])
 
   useEffect(() => {
     const getAssessmentHistory = async () => {

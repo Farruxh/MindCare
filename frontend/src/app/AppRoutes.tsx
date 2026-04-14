@@ -14,6 +14,7 @@ import { DailyJournal } from "./components/pages/DailyJournal.tsx"
 import { MeditationPage } from "./components/pages/MeditationPage.tsx";
 import { ClinicLocator } from "./components/pages/ClinicLocator.tsx"
 import { ThemeProvider } from "./context/ThemeContext.tsx";
+import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 
 export default function AppRoutes() {
     return (
@@ -35,16 +36,15 @@ export default function AppRoutes() {
                                 <Outlet />
                             </ThemeProvider>),
                         children: [
-                            { path: "dashboard", element: <Dashboard /> },
-                            { path: "assistant/:chat_id", element: <ChatInterface /> },
-                            { path: "assessment", element: <SelfAssessment /> },
-                            { path: "daily-journal", element: <DailyJournal /> },
-                            { path: "meditation", element: <MeditationPage /> },
-                            { path: "clinics", element: <ClinicLocator /> },
-                            { path: "profile", element: <ProfilePage /> }
+                            { path: "dashboard", element: <ProtectedRoute> <Dashboard /> </ProtectedRoute>},
+                            { path: "assistant/:chat_id", element:<ProtectedRoute> <ChatInterface /> </ProtectedRoute> },
+                            { path: "assessment", element:<ProtectedRoute> <SelfAssessment /> </ProtectedRoute> },
+                            { path: "daily-journal", element: <ProtectedRoute> <DailyJournal /> </ProtectedRoute> },
+                            { path: "meditation", element: <ProtectedRoute> <MeditationPage /> </ProtectedRoute> },
+                            { path: "clinics", element: <ProtectedRoute> <ClinicLocator /> </ProtectedRoute> },
+                            { path: "profile", element: <ProtectedRoute> <ProfilePage /> </ProtectedRoute> }
                         ]
                     }
-
                 ]
             }
         ])}
