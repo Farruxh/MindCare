@@ -51,7 +51,6 @@ export function ProfilePage() {
       const res = await axios.patch("/api/v1/users/update-account", data, { withCredentials: true })
       setUser(res.data.data)
       setAlert({ message: res.data?.message || "Account information updated successfully", severity: "success" })
-      navigate("/profile")
     } catch (error: any) {
       setAlert({ message: error.response?.data.detail || "Failed to Update Account Information", severity: "error" });
     }
@@ -66,7 +65,6 @@ export function ProfilePage() {
       const res = await axios.patch("/api/v1/users/update-current-password", data, { withCredentials: true })
       setUser(res.data.data)
       setAlert({ message: res.data?.message || "Password Updated Successfully", severity: "success" })
-      navigate("/profile")
     } catch (error: any) {
       setAlert({ message: error.response?.data.detail || "Failed to Update Password", severity: "error" });
     }
@@ -93,7 +91,7 @@ export function ProfilePage() {
   const handleOnDelete = async () => {
     try {
       setLoader(true)
-      const res = await axios.get("/api/v1/users/delete-account", { withCredentials: true })
+      const res = await axios.delete("/api/v1/users/delete-account", { withCredentials: true })
       setAlert({ message: res.data?.message || "Account deleted successfully", severity: "success" });
       navigate("/");
     } catch (error: any) {
@@ -234,7 +232,7 @@ export function ProfilePage() {
               </div>
             </div>
             <button
-              type="submit"
+              type="button"
               className="w-full px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
               onClick={() => {
                 setConfirmDialog({
@@ -244,8 +242,8 @@ export function ProfilePage() {
                   confirmText: "Update",
                   cancelText: "Cancel",
                   onConfirm: () => {
+                    handleSubmit1(handleUpdateAccountDetail)();
                     closeConfirmDialog();
-                    handleLogOut();
                   }
                 })
               }}
@@ -299,7 +297,7 @@ export function ProfilePage() {
                 </div>
               </div>
               <button
-                type="submit"
+                type="button"
                 className="px-5 py-2 mt-2 w-full bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
                 onClick={() => {
                   setConfirmDialog({
@@ -309,8 +307,8 @@ export function ProfilePage() {
                     confirmText: "Update",
                     cancelText: "Cancel",
                     onConfirm: () => {
+                      handleSubmit(handleUpdatePassword)();
                       closeConfirmDialog();
-                      handleLogOut();
                     }
                   })
                 }}
