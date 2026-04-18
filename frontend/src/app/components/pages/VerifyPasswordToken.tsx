@@ -43,14 +43,14 @@ export default function VerifyCode() {
         className="text-center"
       >
         <p className="mb-5 text-sm">
-          We have sent you a reset code to your email. Use it within 6 minutes.
+          We have sent a reset token to your email. Use it within 6 minutes.
         </p>
 
         <div className="flex gap-3 justify-center">
           {[0, 1, 2, 3].map((i) => (
             <input
               key={i}
-              type="text"
+              type="number"
               maxLength={1}
               ref={(el) => { inputs.current[i] = el }}
               onChange={(e) => handleChange(i, e)}

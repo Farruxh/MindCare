@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
 import { useAlert } from "../../context/AlertContext"
-import { PuffLoader } from "react-spinners"
+import Loader from "../loader/loader"
 import { useState } from "react"
 
 interface formData {
@@ -22,7 +22,6 @@ export function ForgotPassword() {
             setLoader(true)
             const res = await axios.post("/api/v1/users/forget-password", data)
             setAlert({ message: res.data?.message || "Password reset token sent successfully", severity: "success" })
-            
             navigate("/verify-token")
         } catch (error: any) {
             setAlert({ message: error.response.data?.detail, severity: "error" })
@@ -34,6 +33,7 @@ export function ForgotPassword() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center px-6 py-12">
+            {loader && <Loader />}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -67,15 +67,12 @@ export function ForgotPassword() {
                                 />
                             </div>
                         </div>
-                        {loader ? (<div className="w-full py-3 flex items-center justify-center">
-                            <PuffLoader size={50} />
-                        </div>) : (<button
+                        <button
                             type="submit"
                             className="w-full py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
                         >
                             Send Reset Token →
-                        </button>)
-                        }
+                        </button>
                     </form>
                 </motion.div>
                 <motion.button
