@@ -8,6 +8,8 @@ from app.models.assessment import Assessment_Result
 from app.models.chat_history import Chat_History
 from app.models.message import Message
 from app.models.clinic import Clinic
+from app.models.pass_token import Password_Token
+from app.models.recent_activity import RecentActivity
 from app.settings import settings
 
 

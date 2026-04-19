@@ -6,9 +6,12 @@ from datetime import datetime, timedelta, timezone
 import secrets
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
-from app.schemas.user import UserCreate, UserUpdate, UserLogin, UserForgotPassword, UserVerifyToken, UserPasswordUpdate, UserResetPassword
+from app.schemas.user import UserCreate, UserUpdate, UserLogin, UserForgotPassword, UserVerifyToken, UserPasswordUpdate, UserResetPassword, ActivityCreate
 from app.models.user import User
+from app.models.assessment import Assessment_Result
+from app.models.chat_history import Chat_History
 from app.models.pass_token import Password_Token
+from app.models.recent_activity import RecentActivity
 from app.settings import settings
 
 
@@ -109,7 +112,7 @@ async def forget_password(db: Session, email: UserForgotPassword):
     mail_message = MessageSchema(
         subject="Password Reset Token",
         recipients=[email],
-        body=f"Your password reset token is: {token}. It will expire in {expiry_local}.",
+        body=f"Your password reset token is: {token}. This token is valid for 6 minutes and will expire at {expiry_local}.",
         subtype="plain"
     )
     fm = FastMail(mail_connection_confg)
@@ -151,14 +154,11 @@ def reset_password(db: Session, data: UserResetPassword, reset_token: str):
 
 def refreshAccessToken(db: Session, incomingRefreshToken: str):
     try:
-        # 1. Decode token to get user identifier
         payload = jwt.decode(incomingRefreshToken, settings.REFRESH_TOKEN_SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id = payload.get("sub")
         
-        # 2. Fetch user from DB
         user = db.query(User).filter(User.user_id == int(user_id)).first()
         
-        # 3. Verify the hashed token using the hasher verify method
         if not user or not password_hasher.verify(incomingRefreshToken, user.refresh_token):
             raise HTTPException(status_code=401, detail="Invalid refresh token")
 
@@ -202,3 +202,25 @@ def delete_all_users(db: Session):
     for user in users:
         db.delete(user)
     db.commit()
+
+def insert_recent_activity(activity_type: ActivityCreate, db: Session, user_id: int):
+    recent_activity_instance = RecentActivity(user_id=user_id, activity_type=activity_type.activity_type)
+    db.add(recent_activity_instance)
+    db.commit()
+    db.refresh(recent_activity_instance)
+    return recent_activity_instance
+
+def get_recent_activities(db: Session, user_id: int):
+    recent_activities = db.query(RecentActivity).filter(RecentActivity.user_id == user_id).order_by(RecentActivity.created_at.desc()).all()
+    # recent_activities.sort(key=lambda x: x.created_at, reverse=True)
+    return recent_activities[:4]
+
+def del_recent_activity(db: Session, user_id: int):
+    recent_activity = db.query(RecentActivity).filter(RecentActivity.user_id == user_id).all()
+    try:
+        for activity in recent_activity:
+            db.delete(activity)
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
