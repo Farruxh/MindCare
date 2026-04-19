@@ -47,4 +47,15 @@ class User(UserBase):
     user_id: int
 
     class Config:
-        from_attribute = True
+        from_attributes = True
+
+class ActivityCreate(BaseModel):
+    activity_type: str
+
+class ActivityOut(BaseModel):
+    activity_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
