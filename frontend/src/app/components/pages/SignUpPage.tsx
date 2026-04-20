@@ -4,6 +4,8 @@ import { Brain, Mail, Lock, User } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form"
 import axios from "axios"
 import { useAlert } from "../../context/AlertContext.tsx";
+import { useState } from "react";
+import Loader from "../loader/loader.tsx";
 
 
 interface formData {
@@ -17,19 +19,24 @@ export function SignUpPage() {
   const { register, handleSubmit } = useForm<formData>();
   const { setAlert } = useAlert();
   const navigate = useNavigate()
+  const [loader, setLoader] = useState(false);
 
   const handleOnSubmit: SubmitHandler<formData> = async (data) => {
     try {
+      setLoader(true);
       const res = await axios.post("/api/v1/users/register-user", data);
       setAlert({ message: res.data.message || "Account Successfully Created.", severity: "success" })
       navigate("/login"); 
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred during signup.", severity: "error" })
+    } finally {
+      setLoader(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center px-6 py-12">
+      {loader && <Loader />}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
