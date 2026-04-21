@@ -23,6 +23,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     const [user, setUser] = useState<userType | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const { setAlert } = useAlert()
+    let isRefreshing = false
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -30,7 +31,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 const res = await axios.get("/api/v1/users/me", { withCredentials: true });
                 setUser(res.data.data);
             } catch (error: any) {
-                if (error.response?.status === 401) {
+                if (error.response?.status === 401 && !isRefreshing) {
+                    isRefreshing = true
                     try {
                         await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
                         
@@ -40,6 +42,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                     } catch (refreshError) {
                         setAlert({message : "Session expired. Please log in again.", severity: "error"});
                         setUser(null);
+                    } finally {
+                        isRefreshing = false
                     }
                 } else {
                     setAlert({message : "An error occurred while fetching user data.", severity: "error"});
@@ -54,8 +58,9 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         const interceptor = axios.interceptors.response.use(
             (response) => response,
             async (error) => {
-                if (error.response?.status === 401 && !error.config._retry) {
+                if (error.response?.status === 401 && !error.config._retry && !isRefreshing) {
                     error.config._retry = true;
+                    isRefreshing = true
                     try {
                         await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
                         return axios(error.config);
@@ -63,6 +68,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                         setAlert({message : "Session expired. Please log in again.", severity: "error"});
                         setUser(null);
                         return Promise.reject(e);
+                    } finally {
+                        isRefreshing = false
                     }
                 }
                 return Promise.reject(error);
