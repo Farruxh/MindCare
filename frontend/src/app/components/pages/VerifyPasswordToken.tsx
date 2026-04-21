@@ -4,11 +4,10 @@ import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import { useNavigate } from "react-router-dom";
 
-export default function VerifyCode() {
+export function VerifyPasswordToken() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const { setAlert } = useAlert()
   const navigate = useNavigate()
-  const [email, setEmail] = useState()
 
   const handleChange = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

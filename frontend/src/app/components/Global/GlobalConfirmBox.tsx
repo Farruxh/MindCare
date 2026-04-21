@@ -47,7 +47,7 @@ export const GlobalConfirmBox = ({
   onClick={onConfirm} 
   variant="contained" 
   autoFocus
-  sx={{ backgroundColor: "#2e3547", color: "text.white", boxShadow: "none" }}
+  sx={{ backgroundColor: "#cc0000", color: "text.white", boxShadow: "none" }}
 >
           {confirmText}
         </Button>
