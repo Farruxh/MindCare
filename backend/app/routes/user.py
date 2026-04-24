@@ -135,8 +135,10 @@ def updatePassword(data: UserPasswordUpdate, db: Session = Depends(get_db), curr
     return ApiResponse(status_code=200, data=user, message="Password Updated Successfully")
 
 @router.delete("/delete-account", response_model = ApiResponse[UserResponse])
-def user_delete(db: Session = Depends(get_db), current_user: int = Depends(auth_dependency)):
+def user_delete(response: Response, db: Session = Depends(get_db), current_user: int = Depends(auth_dependency)):
     delete_user(db, current_user)
+    response.delete_cookie(key="access_token")
+    response.delete_cookie(key="refresh_token")
     return ApiResponse(status_code=200, message="Account deleted successfully")
 
 @router.delete("/deleteAll")

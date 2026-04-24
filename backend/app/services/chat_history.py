@@ -11,8 +11,8 @@ def create_chat_history(db: Session, current_user: int):
         db.commit()
         db.refresh(new_chat)
         return new_chat
-    except Exception as e: 
-        return HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
 
 def get_user_chats(db: Session, current_user: int):
