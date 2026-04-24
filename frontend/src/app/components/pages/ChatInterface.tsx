@@ -6,6 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
+import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 
 interface Message {
   role: string
@@ -31,14 +32,19 @@ export function ChatInterface() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    text: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    onConfirm: () => { },
+  })
+  const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }));
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  useEffect(() => {
-    if (!user) navigate("/login")
-  }, [user])
 
   useEffect(() => {
     if (isSideBarOpen) {
@@ -54,7 +60,7 @@ export function ChatInterface() {
     }
   }, [isSideBarOpen])
 
-  const handleCreateChat = async () => {
+  const handleCreateNewChat = async () => {
     try {
       const res = await axios.post("/api/v1/chats/", { withCredentials: true })
       const chat_id = res.data?.data.chat_id
@@ -107,7 +113,19 @@ export function ChatInterface() {
     }
 
     try {
-      const res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+      let res
+      if (!chat_id) {
+      const [chatRes] = await Promise.all([ 
+        axios.post("/api/v1/chats/", {}, { withCredentials: true }),
+        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
+      ])
+      const chat_id = chatRes.data?.data.chat_id
+      navigate(`/assistant/${chat_id}`)
+      res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+      } 
+      else {
+        res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+      }
       const aiMessage: Message = {
         role: res.data?.data.role,
         message_text: res.data?.data.message_text
@@ -170,11 +188,11 @@ export function ChatInterface() {
             className="pt-2 hover:scale-105 transition-transform cursor-pointer block lg:hidden"
             onClick={() => setIsSideBarOpen((prev) => !prev)}
           >
-            <X className="w-6 h-6 text-primary"/>
+            <X className="w-6 h-6 text-primary" />
           </button>
           <motion.button
             className="mx-auto mt-20 mb-20 flex items-center gap-1 cursor-pointer text-primary hover:scale-105 transition-transform"
-            onClick={() => handleCreateChat()}
+            onClick={() => handleCreateNewChat()}
           >
             <Plus className="p-1 w-8 h-8 bg-primary/10 rounded-xl" />
             <p className="text-lg"> New Chat </p>
@@ -200,7 +218,17 @@ export function ChatInterface() {
                 className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 hover:scale-105 transition-transform"
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleOnDelete(chat.chat_id)
+                  setConfirmDialog({
+                    open: true,
+                    title: "Delete Chat",
+                    text: "Are you sure you want to delete this chat?",
+                    confirmText: "Delete",
+                    cancelText: "Cancel",
+                    onConfirm: () => {
+                      closeConfirmDialog()
+                      handleOnDelete(chat.chat_id)
+                    }
+                  })
                 }}
               />
             </button>
@@ -209,38 +237,46 @@ export function ChatInterface() {
       </motion.div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-4">
-        <AnimatePresence>
-          {messages.map((message, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
-            >
-              {message.role === "model" && (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-5 h-5 text-primary" />
-                </div>
-              )}
-              <div
-                className={`max-w-md px-5 py-3 rounded-2xl shadow-sm ${message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-card-foreground"
-                  }`}
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-4 flex flex-col">
+        {messages.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-center">
+            <h2 className="text-xl md:text-2xl font-medium text-muted-foreground/80">
+              Hey {user?.name}, how can I assist you today
+            </h2>
+          </div>
+        ) : (
+          <AnimatePresence>
+            {messages.map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <p className="leading-relaxed">{message.message_text}</p>
-              </div>
-              {message.role === "user" && (
-                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                  <User className="w-5 h-5 text-secondary" />
+                {message.role === "model" && (
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Bot className="w-5 h-5 text-primary" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-md px-5 py-3 rounded-2xl shadow-sm ${message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border border-border text-card-foreground"
+                    }`}
+                >
+                  <p className="leading-relaxed">{message.message_text}</p>
                 </div>
-              )}
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                {message.role === "user" && (
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 text-secondary" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        )}
 
         {/* Typing Indicator */}
         {isTyping && (
@@ -288,7 +324,7 @@ export function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyUp={(e) => e.key === "Enter" && handleSend()}
-            placeholder={input.length > 0 ? "Reply..." : "Share what's on your mind..."}
+            placeholder={messages.length > 0 ? "Reply..." : "Share what's on your mind"}
             className="flex-1 px-5 py-3 bg-input-background rounded-2xl border border-border text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
           />
           <button
@@ -300,6 +336,17 @@ export function ChatInterface() {
           </button>
         </div>
       </motion.div>
+
+      {/* Confirm Dialog */}
+      <GlobalConfirmBox
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        text={confirmDialog.text}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={closeConfirmDialog}
+      />
     </motion.div>
   );
 }
