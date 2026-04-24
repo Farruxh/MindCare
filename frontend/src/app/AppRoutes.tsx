@@ -29,7 +29,7 @@ export default function AppRoutes() {
                     { path: "verify-token", element: <VerifyPasswordToken /> },
                     { path: "reset-password", element: <ResetPassword /> },
                     { path: "dashboard", element: <ProtectedRoute> <Dashboard /> </ProtectedRoute> },
-                    { path: "assistant/:chat_id", element: <ProtectedRoute> <ChatInterface /> </ProtectedRoute> },
+                    { path: "assistant/:chat_id?", element: <ProtectedRoute> <ChatInterface /> </ProtectedRoute> },
                     { path: "assessment", element: <ProtectedRoute> <SelfAssessment /> </ProtectedRoute> },
                     { path: "daily-journal", element: <ProtectedRoute> <DailyJournal /> </ProtectedRoute> },
                     { path: "meditation", element: <ProtectedRoute> <MeditationPage /> </ProtectedRoute> },
