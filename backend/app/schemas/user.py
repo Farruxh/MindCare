@@ -1,9 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class UserBase(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
     gender: str
 
@@ -11,12 +11,12 @@ class UserCreate(UserBase):
     pass
 
 class UserLogin(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 class UserUpdate(BaseModel):
     name: str | None = None
-    email: str | None = None
+    email: EmailStr | None = None
     latitude: float | None = None
     longitude: float | None = None
 
@@ -26,7 +26,7 @@ class UserPasswordUpdate(BaseModel):
     confirmPassword: str
 
 class UserForgotPassword(BaseModel):
-    email: str
+    email: EmailStr
 
 class UserVerifyToken(BaseModel):
     token: str
