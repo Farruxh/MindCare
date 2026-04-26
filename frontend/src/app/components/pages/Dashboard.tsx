@@ -5,21 +5,18 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext"
+import { useTheme } from "../../context/ThemeContext"
 import { useEffect, useState } from "react"
 import Loader from "../loader/loader";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 
-const recentSessions = [
-  { id: 1, date: "2 hours ago", topic: "Stress Assessment", duration: "25 min" },
-  { id: 2, date: "Yesterday", topic: "Anxiety Relief", duration: "18 min" },
-  { id: 3, date: "3 days ago", topic: "General Chat", duration: "32 min" }
-];
-
 
 export function Dashboard() {
   const navigate = useNavigate()
-  const { user, isLoading } = useAuth()
+  const { user } = useAuth()
   const { setAlert } = useAlert();
+  const { setIsDarkMode } = useTheme()
+  const { setUser } = useAuth()
   const [loader, setLoader] = useState(false)
   const [assessmentHistory, setAssessmentHistory] = useState<{
     created_at: string;
@@ -36,6 +33,10 @@ export function Dashboard() {
     onConfirm: () => { }
   })
   const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }))
+  const [recentActivity, setRecentActivity] = useState<{
+    type: string;
+    created_at: Date;
+  }[]>([])
 
   useEffect(() => {
     const getAssessmentHistory = async () => {
@@ -49,6 +50,23 @@ export function Dashboard() {
     getAssessmentHistory()
   }, [])
 
+  useEffect(() => {
+    const getRecentActivity = async () => {
+      try {
+        const res = await axios.get("/api/v1/users/recent-activity/get", { withCredentials: true })
+        const formattedActivities = res.data.data.map((activity: any) => ({
+          type: activity.activity_type,
+          created_at: new Date(activity.created_at)
+        }));
+        setRecentActivity(formattedActivities);
+      } catch (error: any) {
+        setAlert({ message: error.response.data?.detail || "Unable to fetch recent activity", severity: "error" });
+      }
+    }
+    getRecentActivity()
+  }, [])
+
+
   const chartData = assessmentHistory.map((row) => ({
     date: new Date(row.created_at).toLocaleDateString(),
     anxiety: row.anxiety_score ?? 0,
@@ -59,25 +77,14 @@ export function Dashboard() {
   const handleOnLogout = async () => {
     try {
       setLoader(true)
-      const res = await axios.get("/api/v1//users/logout", { withCredentials: true })
+      const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
+      setIsDarkMode(false)
       navigate("/");
+      setUser(null)
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
-    } finally {
-      setLoader(false)
-    }
-  }
-
-  const handleOnClick = async () => {
-    try {
-      setLoader(true)
-      const res = await axios.post("/api/v1/chats/", { withCredentials: true })
-      const chat_id = res.data?.data.chat_id
-      navigate(`/assistant/${chat_id}`)
-    } catch (error: any) {
-      console.log(error.response?.data?.detail);
     } finally {
       setLoader(false)
     }
@@ -111,7 +118,7 @@ export function Dashboard() {
                   text: "Are you sure you want to log out of your account??",
                   confirmText: "Logout",
                   cancelText: "Cancel",
-                  onConfirm: () => { 
+                  onConfirm: () => {
                     closeConfirmDialog()
                     handleOnLogout()
                   }
@@ -156,7 +163,7 @@ export function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + index * 0.05 }}
-              onClick={() => action.path == "/assistant" ? handleOnClick() : navigate(action.path)}
+              onClick={ () => navigate(action.path) }
               className="bg-card p-6 rounded-2xl shadow-sm hover:shadow-lg border border-border hover:border-primary/30 transition-all duration-300 group cursor-pointer"
             >
               <div className={`${action.color} text-white p-3 rounded-xl inline-flex mb-3 group-hover:scale-110 transition-transform duration-300`}>
@@ -178,8 +185,8 @@ export function Dashboard() {
             <h3 className="mb-6 text-foreground">Assessment Progress</h3>
             {chartData.length > 0 ? (
               <>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={chartData}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: -35, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e8eaed" />
                     <XAxis dataKey="date" stroke="#6c757d" />
                     <YAxis stroke="#6c757d" />
@@ -198,7 +205,7 @@ export function Dashboard() {
                 </ResponsiveContainer>
                 <div className="mt-4 p-4 bg-muted/30 rounded-xl">
                   <p className="text-sm text-muted-foreground">
-                    <span className="text-primary">Great progress!</span> Your scores show improvement over the past month. Keep up with your self-care routine.
+                    <span className="text-primary font-semibold">Wellness Insights:</span> Your assessment progress is shown here to give you a visual representation of your trends through this graph.
                   </p>
                 </div>
               </>
@@ -226,19 +233,24 @@ export function Dashboard() {
           >
             <h3 className="mb-6 text-foreground">Recent Sessions</h3>
             <div className="space-y-4">
-              {recentSessions.map((session) => (
-                <div key={session.id} className="p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="text-sm text-muted-foreground mb-1">{session.date}</div>
-                  <div className="text-foreground mb-1">{session.topic}</div>
-                  <div className="text-sm text-primary">{session.duration}</div>
-                </div>
-              ))}
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <div key={index} className="p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
+                    <div className="text-sm text-muted-foreground mb-1">{new Date(activity.created_at + 'Z').toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</div>
+                    <div className="text-foreground mb-1">{activity.type}</div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-base font-medium text-foreground">
+                  No recent activities yet
+                </p>
+              )}
             </div>
-            <button
+            {/* <button
               className="w-full mt-4 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
             >
               View All Sessions
-            </button>
+            </button> */}
           </motion.div>
         </div>
 
@@ -249,12 +261,12 @@ export function Dashboard() {
           transition={{ delay: 0.3 }}
           className="mt-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8 border border-primary/20"
         >
-          <div className="flex items-start gap-4">
+          <div className="flex gap-4 sm:flex-row flex-col sm:text-left text-center sm:items-start items-center">
             <div className="p-3 bg-primary/20 rounded-xl">
               <Sparkles className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h3 className="mb-2 text-foreground">Daily Wellness Tip</h3>
+              <h3 className="mb-2 text-foreground">Wellness Tip</h3>
               <p className="text-muted-foreground">
                 Take 5 minutes today for deep breathing. It can help reduce stress and improve focus. Try our guided meditation exercises to get started.
               </p>
@@ -269,14 +281,14 @@ export function Dashboard() {
         </motion.div>
       </div>
 
-      <GlobalConfirmBox 
-       open={confirmDialog.open}
-       title={confirmDialog.title}
-       text={confirmDialog.text}
-       confirmText={confirmDialog.confirmText}
-       cancelText={confirmDialog.cancelText}
-       onConfirm={confirmDialog.onConfirm}
-       onCancel={closeConfirmDialog}
+      <GlobalConfirmBox
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        text={confirmDialog.text}
+        confirmText={confirmDialog.confirmText}
+        cancelText={confirmDialog.cancelText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={closeConfirmDialog}
       />
     </div>
   );
