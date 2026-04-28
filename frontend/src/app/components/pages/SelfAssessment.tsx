@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext"
 import Loader from "../loader/loader";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 // PSS-10 (Perceived Stress Scale) — max score: 40
 // GAD-7 (Generalized Anxiety Disorder) — max score: 21
@@ -117,6 +118,7 @@ export function SelfAssessment() {
   const [showResults, setShowResults] = useState(false)
   const navigate = useNavigate()
   const { setAlert } = useAlert()
+  useDocumentTitle("Assessments | MindCare");
 
   const questionsWithTypes = selectedTypes.flatMap((type) =>
     questionsByType[type as keyof typeof questionsByType].map((q) => ({ question: q, type }))
@@ -174,7 +176,10 @@ export function SelfAssessment() {
     try {
       console.log(isEmailPreference);
       setLoader(true)
-      const res = await axios.post("/api/v1/assessments/create", payload, { withCredentials: true })
+      const [res] = await Promise.all([
+        axios.post("/api/v1/assessments/create", payload, { withCredentials: true }),
+        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Completed Mental Health Assessment" }, { withCredentials: true })
+      ])
       setAlert({ message: res.data.message || "Assessment results saved successfully!", severity: "success" })
     } catch (error: any) {
       setAlert({ message: error.response?.data?.message || "Failed to save assessment results. ", severity: "error" })
@@ -182,21 +187,6 @@ export function SelfAssessment() {
       setLoader(false)
     }
   };
-
-  const handleOnClick = async () => {
-    try {
-      setLoader(true)
-      const res = await axios.post("/api/v1/chats/", { withCredentials: true })
-      console.log(res.data?.message);
-      const chat_id = res.data?.data.chat_id
-      navigate(`/assistant/${chat_id}`)
-    } catch (error: any) {
-      console.log(error.response?.data?.detail);
-    }
-    finally {
-      setLoader(false)
-    }
-  }
 
   const handleOnMapClick = () => {
     try {
@@ -417,7 +407,7 @@ export function SelfAssessment() {
             <h4 className="mb-4 text-foreground text-center">What would you like to do next?</h4>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => handleOnClick()}
+                onClick={ () => navigate("/assistant") }
                 className="py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/80 dark:hover:bg-muted/80 transition-all duration-300 cursor-pointer"
               >
                 Talk to AI
