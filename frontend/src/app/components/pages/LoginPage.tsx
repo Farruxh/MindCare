@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Brain, Mail, Lock } from "lucide-react";
+import { Brain, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import { useForm, SubmitHandler } from "react-hook-form"
@@ -7,6 +7,7 @@ import { useAlert } from "../../context/AlertContext.tsx";
 import { useAuth } from "../../context/AuthContext"
 import { useState } from "react"
 import Loader from "../loader/loader.tsx";
+import useDocumentTitle from "../../hooks/useDocumentTitle.ts";
 
 interface formData {
   email: string,
@@ -19,6 +20,8 @@ export function LoginPage() {
   const navigate = useNavigate()
   const { setAlert } = useAlert();
   const { setUser} = useAuth()
+  const [showPassword, setShowPassword] = useState(false)
+  useDocumentTitle("Login | MindCare")
 
   const handleOnSubmit: SubmitHandler<formData> = async (data) => {
     try {
@@ -76,12 +79,19 @@ export function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
-                  type="password"
-                  className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                  type={showPassword ? "text" : "password"}
+                  className="w-full pl-11 pr-11 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                   placeholder="••••••••"
                   {...register("password", { required: true })}
-
                 />
+                <motion.button 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
+                  type="button" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </motion.button> 
               </div>
             </div>
 
