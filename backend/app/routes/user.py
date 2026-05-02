@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, APIRouter, Request, Response, Cookie
 from sqlalchemy.orm import Session
-from app.services.user import del_recent_activity, get_recent_activities, insert_recent_activity, refreshAccessToken, register_user, login_user, get_users, get_current_user, forget_password, verifyPasswordToken, reset_password, updateAccountDetails, updateCurrentPassword, delete_user, delete_all_users
-from app.schemas.user import ActivityOut, ActivityCreate, UserCreate, UserLogin, UserUpdate, UserResponse, UserPasswordUpdate, UserForgotPassword, UserVerifyToken, UserResetPassword, User
+from app.services.user import del_recent_activity, get_recent_activities, insert_recent_activity, refreshAccessToken, register_user, login_user, update_user_dark_mode, get_users, get_current_user, forget_password, verifyPasswordToken, reset_password, updateAccountDetails, updateCurrentPassword, delete_user, delete_all_users
+from app.schemas.user import ActivityOut, ActivityCreate, UserCreate, UserLogin, ThemeUpdate, UserUpdate, UserResponse, UserPasswordUpdate, UserForgotPassword, UserVerifyToken, UserResetPassword, User
 from app.schemas.ApiResponse import ApiResponse
 from app.db import get_db
 from app.dependency.auth import auth_dependency
@@ -38,6 +38,16 @@ def login(data: UserLogin, response: Response, db: Session = Depends(get_db)):
         secure=True,
     )
     return ApiResponse(status_code=200, data=user, message="Log in successfully")
+
+@router.patch("/update-dark-mode", response_model = ApiResponse[UserResponse])
+def update_dark_mode(
+    is_dark_mode: ThemeUpdate,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(auth_dependency)
+):
+    update_user_dark_mode(db, current_user, is_dark_mode)
+    user = get_current_user(db, current_user)
+    return ApiResponse(status_code=200, data=user, message="Dark mode updated successfully")
 
 @router.get("/logout")
 def logout_user(response: Response, _: int = Depends(auth_dependency)):

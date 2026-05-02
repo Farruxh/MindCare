@@ -24,6 +24,10 @@ if config.config_file_name is not None:
 from app.models.user import Base
 from app.models.chat_history import Base
 from app.models.message import Base
+from app.models.recent_activity import Base
+from app.models.clinic import Base
+from app.models.assessment import Base
+from app.models.pass_token import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
