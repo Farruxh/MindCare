@@ -1,9 +1,11 @@
 import { motion } from "motion/react";
 import { Brain, MessageCircle, ClipboardList, MapPin, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export function LandingPage() {
   const navigate = useNavigate();
+  useDocumentTitle("MindCare")
   
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },

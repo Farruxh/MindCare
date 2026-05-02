@@ -29,6 +29,7 @@ export function LoginPage() {
       const res = await axios.post("/api/v1/users/login", data, { withCredentials: true });
       setAlert({ message: res.data?.message || "Login successfully", severity: "success" });
       setUser(res.data.data)
+      localStorage.setItem("isLoggedIn", "true")
       navigate("/dashboard");
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging in", severity: "error" });

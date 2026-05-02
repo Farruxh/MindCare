@@ -2,6 +2,8 @@ import { motion } from "motion/react";
 import { ArrowLeft, Play, Pause, Wind, Headphones, Heart, Waves } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
+import axios from "axios";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export function MeditationPage() {
   const [activeTab, setActiveTab] = useState<"breathing" | "meditation" | "audio" | "grounding">("breathing");
@@ -9,6 +11,7 @@ export function MeditationPage() {
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [sessionTimeElapsed, setSessionTimeElapsed] = useState(0);
   const navigate = useNavigate();
+  useDocumentTitle("Meditation & Relaxation | MindCare");
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -192,6 +195,10 @@ export function MeditationPage() {
   }
 };
 
+  const handleExerciseView = async (activity: string) => {
+    await axios.post("/api/v1/users/recent-activity/create", { activity_type: activity }, { withCredentials: true });
+  }
+
   const groundingTechniques = [
     {
       title: "5-4-3-2-1 Technique",
@@ -239,7 +246,12 @@ export function MeditationPage() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() =>{
+                setActiveTab(tab.id as any)
+                if (tab.id == "grounding") {
+                  handleExerciseView("Viewed Grounding Techniques")
+                }
+              }}
               className={`flex items-center gap-2 px-5 py-3 rounded-xl transition-all duration-300 whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
                   ? "bg-primary text-primary-foreground shadow-md"
@@ -315,7 +327,12 @@ export function MeditationPage() {
               </div>
 
               <button
-                onClick={() => setBreathingActive(!breathingActive)}
+                onClick={() => {
+                  if (!breathingActive) {
+                    handleExerciseView("Started Deep Breathing Exercise")
+                  };
+                  setBreathingActive(!breathingActive);
+                }}
                 className="px-8 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/80 transition-all duration-300 shadow-sm cursor-pointer"
               >
                 {breathingActive ? "Stop" : "Start Exercise"}
@@ -382,7 +399,12 @@ export function MeditationPage() {
                     </span>
                   </div>
                   <button 
-                    onClick={() => toggleSession(sessionData.title)}
+                    onClick={() => {
+                      toggleSession(sessionData.title)
+                      if (!isActive) {
+                        handleExerciseView(`Started ${sessionData.title} Meditation Session`)
+                      }
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
                   >
                     {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -418,7 +440,12 @@ export function MeditationPage() {
                     <p className="text-sm text-muted-foreground mb-3">{track.description}</p>
                     <div className="flex flex-col gap-3 mt-2">
                       {track.src && (
-                        <audio controls src={track.src} className="w-full h-10" />
+                        <audio 
+                        className="w-full h-10"
+                        controls 
+                        src={track.src}
+                        onPlay={() => handleExerciseView(`Played ${track.title} Relaxing Audio`)}
+                        />
                       )}
                     </div>
                   </div>

@@ -54,6 +54,14 @@ const options = [
   { label: "Nearly every day", value: 3 },
 ];
 
+const stressOptions = [
+  { label: "Never", value: 0 },
+  { label: "Almost Never", value: 1 },
+  { label: "Sometimes", value: 2 },
+  { label: "Fairly Often", value: 3 },
+  { label: "Very Often", value: 4 },
+]
+
 // ─── Assessment Type Config ───────────────────────────────────────────────────
 const assessmentTypes = [
   { id: "stress", label: "Stress", color: "bg-red-600" },
@@ -101,7 +109,7 @@ function getSeverityStyle(severity: string) {
     Low: { color: "text-green-600", bgColor: "bg-green-50", message: "Stress levels are manageable. Keep it up!" },
     Mild: { color: "text-yellow-600", bgColor: "bg-yellow-50", message: "Some concerns detected. Consider self-care practices." },
     Moderate: { color: "text-orange-600", bgColor: "bg-orange-50", message: "Noticeable symptoms. We recommend professional support." },
-    High: { color: "text-orange-600", bgColor: "bg-orange-50", message: "High stress detected. Consider reaching out for support." },
+    High: { color: "text-orange-600", bgColor: "bg-orange-50", message: "High stress detected. Consider reaching out for professional support." },
     "Moderately Severe": { color: "text-red-500", bgColor: "bg-red-50", message: "Significant symptoms. Please consider professional help." },
     Severe: { color: "text-red-600", bgColor: "bg-red-50", message: "Significant concerns. Please consider reaching out to a professional." },
   };
@@ -486,7 +494,19 @@ export function SelfAssessment() {
           </h3>
 
           <div className="space-y-3">
-            {options.map((option) => (
+            {questionsWithTypes[currentQuestion]?.type === "stress" ? (stressOptions.map((stressOption) => (
+              <motion.button
+                key={stressOption.value}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleAnswer(stressOption.value)}
+                className="w-full p-4 text-left bg-muted/30 hover:bg-primary/10 border border-border hover:border-primary/50 rounded-xl transition-all duration-300 cursor-pointer"
+              >
+                {stressOption.label}
+              </motion.button>
+            )))
+            : 
+            (options.map((option) => (
               <motion.button
                 key={option.value}
                 whileHover={{ scale: 1.02 }}
@@ -496,7 +516,8 @@ export function SelfAssessment() {
               >
                 {option.label}
               </motion.button>
-            ))}
+            )))
+          }
           </div>
         </motion.div>
       </div>
