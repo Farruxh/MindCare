@@ -1,5 +1,5 @@
 from app.db import Base
-from sqlalchemy import Column, DateTime, Integer, String, Float, func
+from sqlalchemy import Column, DateTime, Integer, String, Float, Boolean, func
 
 class User(Base):
     __tablename__ = "users"
@@ -11,5 +11,7 @@ class User(Base):
     latitude = Column(Float)
     longitude = Column(Float)
     refresh_token = Column(String, nullable=True)
+    isDarkMode = Column(String, default="light")
+    email_notifications = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

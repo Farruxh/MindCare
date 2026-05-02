@@ -27,7 +27,7 @@ async def create_assessment(db: Session, assessment_data: AssessmentCreate, curr
         db.add(assessment_instance)
         db.commit()
         db.refresh(assessment_instance)
-        if assessment_data.isEmailPreference:
+        if user.email_notifications:
             mail_message = MessageSchema(
                 subject="Your Assessment Results 🌿",
                 recipients=[user.email],

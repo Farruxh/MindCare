@@ -6,10 +6,8 @@ from datetime import datetime, timedelta, timezone
 import secrets
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
-from app.schemas.user import UserCreate, UserUpdate, UserLogin, UserForgotPassword, UserVerifyToken, UserPasswordUpdate, UserResetPassword, ActivityCreate
+from app.schemas.user import ThemeUpdate, UserCreate, UserUpdate, UserLogin, UserForgotPassword, UserVerifyToken, UserPasswordUpdate, UserResetPassword, ActivityCreate
 from app.models.user import User
-from app.models.assessment import Assessment_Result
-from app.models.chat_history import Chat_History
 from app.models.pass_token import Password_Token
 from app.models.recent_activity import RecentActivity
 from app.settings import settings
@@ -80,6 +78,13 @@ def login_user(db: Session, data: UserLogin):
     
     access_token, refresh_token = generateAccessAndRefreshTokens(db, user_instance)
     return user_instance, access_token, refresh_token
+
+def update_user_dark_mode(db: Session, user_id: int, is_dark_mode: ThemeUpdate):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.isDarkMode = is_dark_mode.theme
+    db.commit()
 
 def get_users(db: Session):
     return db.query(User).all()
@@ -212,7 +217,6 @@ def insert_recent_activity(activity_type: ActivityCreate, db: Session, user_id: 
 
 def get_recent_activities(db: Session, user_id: int):
     recent_activities = db.query(RecentActivity).filter(RecentActivity.user_id == user_id).order_by(RecentActivity.created_at.desc()).all()
-    # recent_activities.sort(key=lambda x: x.created_at, reverse=True)
     return recent_activities[:4]
 
 def del_recent_activity(db: Session, user_id: int):

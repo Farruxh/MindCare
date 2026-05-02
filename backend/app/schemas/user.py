@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, EmailStr
+from typing import Literal
 
 class UserBase(BaseModel):
     name: str
@@ -19,6 +20,10 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     latitude: float | None = None
     longitude: float | None = None
+    email_notifications: bool | None = None
+
+class ThemeUpdate(BaseModel):
+    theme: Literal['light', 'dark']
 
 class UserPasswordUpdate(BaseModel):
     currentPassword: str
@@ -39,6 +44,8 @@ class UserResponse(BaseModel):
     user_id: int
     name: str
     email: str
+    isDarkMode: str
+    email_notifications: bool
     latitude: float | None = None
     longitude: float | None = None
     created_at: datetime
