@@ -1,4 +1,4 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
 import App from "./App";
 import { SignUpPage } from "./components/pages/SignUpPage.tsx";
 import { LoginPage } from "./components/pages/LoginPage.tsx";
@@ -14,6 +14,7 @@ import { DailyJournal } from "./components/pages/DailyJournal.tsx"
 import { MeditationPage } from "./components/pages/MeditationPage.tsx";
 import { ClinicLocator } from "./components/pages/ClinicLocator.tsx"
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
+import { ThemeProvider } from "./components/ThemeProvider.tsx";
 
 export default function AppRoutes() {
     return (
@@ -28,13 +29,23 @@ export default function AppRoutes() {
                     { path: "forgot-password", element: <ForgotPassword /> },
                     { path: "verify-token", element: <VerifyPasswordToken /> },
                     { path: "reset-password", element: <ResetPassword /> },
-                    { path: "dashboard", element: <ProtectedRoute> <Dashboard /> </ProtectedRoute> },
-                    { path: "assistant/:chat_id?", element: <ProtectedRoute> <ChatInterface /> </ProtectedRoute> },
-                    { path: "assessment", element: <ProtectedRoute> <SelfAssessment /> </ProtectedRoute> },
-                    { path: "daily-journal", element: <ProtectedRoute> <DailyJournal /> </ProtectedRoute> },
-                    { path: "meditation", element: <ProtectedRoute> <MeditationPage /> </ProtectedRoute> },
-                    { path: "clinics", element: <ProtectedRoute> <ClinicLocator /> </ProtectedRoute> },
-                    { path: "profile", element: <ProtectedRoute> <ProfilePage /> </ProtectedRoute> }
+                    {
+                        element:
+                            <ThemeProvider>
+                                <ProtectedRoute>
+                                    <Outlet />
+                                </ProtectedRoute>
+                            </ThemeProvider>,
+                        children: [
+                            { path: "dashboard", element: <Dashboard /> },
+                            { path: "assistant/:chat_id?", element: <ChatInterface /> },
+                            { path: "assessment", element: <SelfAssessment /> },
+                            { path: "daily-journal", element: <DailyJournal /> },
+                            { path: "meditation", element: <MeditationPage /> },
+                            { path: "clinics", element: <ClinicLocator /> },
+                            { path: "profile", element: <ProfilePage /> }
+                        ]
+                    },
                 ]
             }
         ])} />

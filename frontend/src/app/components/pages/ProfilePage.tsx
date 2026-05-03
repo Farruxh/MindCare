@@ -1,14 +1,14 @@
 import { motion } from "motion/react";
-import { ArrowLeft, User, Mail, Lock, Bell, Moon, Sun, LogOut, MapPin } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, User, Mail, Lock, Bell, Moon, Sun, LogOut, MapPin, EyeOff, Eye } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
 import { useForm, SubmitHandler } from "react-hook-form"
 import Loader from "../loader/loader";
-import { useTheme } from "../../context/ThemeContext"
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 interface accountFormData {
   name: string
@@ -34,16 +34,27 @@ export function ProfilePage() {
   const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }));
   
   const [isEditProfile, setIsEditProfile] = useState(false)
-  const [isEmailPreference, setIsEmailPreference] = useState(() => {
-    return JSON.parse(localStorage.getItem("isEmailPreference") ?? "true")
-  })
-  const { user, setUser, isLoading } = useAuth()
+  const [isEmailPreference, setIsEmailPreference] = useState(true)
+  const { user, setUser } = useAuth()
   const navigate = useNavigate();
   const { setAlert } = useAlert();
   const { register: register1, handleSubmit: handleSubmit1 } = useForm<accountFormData>()
   const { register: register, handleSubmit: handleSubmit } = useForm<formData>()
-  const { isDarkMode, setIsDarkMode } = useTheme()
+  const [ isDarkMode, setIsDarkMode ] = useState<"light" | "dark">("light")
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
   const memberSince = user ? new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : ""
+  useDocumentTitle("Profile | MindCare");
+
+  useEffect(() => {
+    if (user?.isDarkMode) {
+      setIsDarkMode(user.isDarkMode);
+    }
+    if (user && user.email_notifications !== undefined) {
+      setIsEmailPreference(user.email_notifications);
+    }
+  }, [user]);
 
   const handleUpdateAccountDetail: SubmitHandler<accountFormData> = async (data) => {
     try {
@@ -53,6 +64,40 @@ export function ProfilePage() {
       setAlert({ message: res.data?.message || "Account information updated successfully", severity: "success" })
     } catch (error: any) {
       setAlert({ message: error.response?.data.detail || "Failed to Update Account Information", severity: "error" });
+    }
+    finally {
+      setLoader(false)
+    }
+  }
+
+  const handleToggleDarkMode = async () => {
+    const newTheme = isDarkMode === "light" ? "dark" : "light";
+    try {
+      setLoader(true)
+      await axios.patch("/api/v1/users/update-dark-mode", { theme: newTheme }, { withCredentials: true })
+      setIsDarkMode(newTheme)
+      if (user) {
+        setUser({ ...user, isDarkMode: newTheme });
+      }
+    } catch (error: any) {
+      setAlert({ message: error.response?.data.detail || "Failed to Update Theme Preference", severity: "error" });
+    }
+    finally {
+      setLoader(false)
+    }
+  }
+
+  const handleToggleEmailPreference = async () => {
+    const newPreference = !isEmailPreference;
+    try {
+      setLoader(true)
+      await axios.patch("/api/v1/users/update-account", { email_notifications: newPreference }, { withCredentials: true })
+      setIsEmailPreference(newPreference)
+      if (user) {
+        setUser({ ...user, email_notifications: newPreference });
+      }
+    } catch (error: any) {
+      setAlert({ message: error.response?.data.detail || "Failed to Update Email Preference", severity: "error" });
     }
     finally {
       setLoader(false)
@@ -79,7 +124,6 @@ export function ProfilePage() {
       const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
-      setIsDarkMode(false)
       setUser(null)
       navigate("/");
     } catch (error: any) {
@@ -88,20 +132,22 @@ export function ProfilePage() {
       setLoader(false)
     }
   }
-  const handleOnDelete = async () => {
+  const handleDeleteAccount = async () => {
     try {
       setLoader(true)
       const res = await axios.delete("/api/v1/users/delete-account", { withCredentials: true })
       setAlert({ message: res.data?.message || "Account deleted successfully", severity: "success" });
+      localStorage.clear()
+      setUser(null)
       navigate("/");
     } catch (error: any) {
-      setAlert({ message: error.response?.data?.detail || "An error occurred while deleting account out", severity: "error" });
+      setAlert({ message: error.response?.data?.detail || "An error occurred while deleting account", severity: "error" });
     } finally {
       setLoader(false)
     }
   }
 
-  const handleOnAssessmentDelete = async () => {
+  const handleAssessmentDelete = async () => {
     try {
       setLoader(true)
       const res = await axios.delete("/api/v1/assessments/delete", { withCredentials: true })
@@ -143,7 +189,6 @@ export function ProfilePage() {
       }
     );
   };
-
 
   return (
     <div className="min-h-screen background">
@@ -268,10 +313,18 @@ export function ProfilePage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showCurrentPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("currentPassword", { required: true })}
                   />
+                  <motion.button 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
+                  type="button" 
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </motion.button>
                 </div>
               </div>
               <div>
@@ -279,10 +332,18 @@ export function ProfilePage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showNewPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("newPassword", { required: true })}
                   />
+                  <motion.button 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
+                  type="button" 
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </motion.button>
                 </div>
               </div>
               <div>
@@ -290,10 +351,18 @@ export function ProfilePage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showConfirmNewPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("confirmPassword", { required: true })}
                   />
+                  <motion.button 
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
+                  type="button" 
+                  onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {showConfirmNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </motion.button>
                 </div>
               </div>
               <button
@@ -333,7 +402,7 @@ export function ProfilePage() {
                 <Bell className="w-5 h-5 text-muted-foreground" />
                 <div>
                   <div className="text-foreground">Email Notifications</div>
-                  <div className="text-sm text-muted-foreground">Receive updates and reminders</div>
+                  <div className="text-sm text-muted-foreground">Receive your assessment results via email</div>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -342,8 +411,7 @@ export function ProfilePage() {
                   className="sr-only peer"
                   checked={isEmailPreference}
                   onChange={() => {
-                    setIsEmailPreference(!isEmailPreference)
-                    localStorage.setItem("isEmailPreference", JSON.stringify(!isEmailPreference))
+                    handleToggleEmailPreference()
                   }}
                 />
                 <div className="w-14 h-7 bg-muted peer-checked:bg-slate-700 dark:peer-checked:bg-slate-500 rounded-full transition-colors duration-300" />
@@ -379,14 +447,14 @@ export function ProfilePage() {
                 <input
                   type="checkbox"
                   className="sr-only peer"
-                  checked={isDarkMode}
+                  checked={isDarkMode === "dark"}
                   onChange={() => {
-                    setIsDarkMode(!isDarkMode)
+                    handleToggleDarkMode()
                   }}
                 />
                 <div className="w-14 h-7 bg-muted peer-checked:bg-primary rounded-full transition-colors duration-300" />
                 <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full peer-checked:translate-x-7 transition-all duration-300 flex items-center justify-center shadow-sm">
-                  {isDarkMode ? (
+                  {isDarkMode === "dark" ? (
                     <Moon className="w-3 h-3 text-slate-700" />
                   ) : (
                     <Sun className="w-3 h-3 text-amber-500" />
@@ -432,7 +500,7 @@ export function ProfilePage() {
                 cancelText: "Cancel",
                 onConfirm: () => {
                   closeConfirmDialog();
-                  handleOnAssessmentDelete();
+                  handleAssessmentDelete();
                 }
               })}
               className="w-full px-5 py-3 border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-300 cursor-pointer">
@@ -447,7 +515,7 @@ export function ProfilePage() {
                 cancelText: "Cancel",
                 onConfirm: () => {
                   closeConfirmDialog();
-                  handleOnDelete();
+                  handleDeleteAccount();
                 }
               })}
               className="w-full px-5 py-3 border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground rounded-xl transition-all duration-300 cursor-pointer">

@@ -2,24 +2,26 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import axios from "axios"
 import { useAlert } from "./AlertContext"
 
-interface userType { 
+interface userType {
     user_id: number
     name: string
     email: string
+    isDarkMode: "light" | "dark"
     latitude: number
     longitude: number
+    email_notifications: boolean
     created_at: string
 }
 
-interface userContextType{
+interface userContextType {
     user: userType | null
     setUser: (user: userType | null) => void
     isLoading: boolean
 }
 
-const AuthContext = createContext< userContextType | null >(null)
+const AuthContext = createContext<userContextType | null>(null)
 
-export const AuthProvider = ({children}: {children: ReactNode}) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<userType | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const { setAlert } = useAlert()
@@ -35,25 +37,28 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                     isRefreshing = true
                     try {
                         await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
-                        
+
                         const retryRes = await axios.get("/api/v1/users/me", { withCredentials: true });
                         setUser(retryRes.data.data);
-                        return; 
+                        return;
                     } catch (refreshError) {
-                        setAlert({message : "Session expired. Please log in again.", severity: "error"});
                         setUser(null);
                     } finally {
                         isRefreshing = false
                     }
                 } else {
-                    setAlert({message : "An error occurred while fetching user data.", severity: "error"});
                     setUser(null);
                 }
-            } finally{
+            } finally {
                 setIsLoading(false)
             }
         }
-        fetchUser()
+        if (localStorage.getItem("isLoggedIn")) {
+            fetchUser()
+        }
+        else {
+            setIsLoading(false)
+        }
 
         const interceptor = axios.interceptors.response.use(
             (response) => response,
@@ -65,7 +70,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                         await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
                         return axios(error.config);
                     } catch (e) {
-                        setAlert({message : "Session expired. Please log in again.", severity: "error"});
+                        setAlert({ message: "Session expired. Please log in again.", severity: "error" });
                         setUser(null);
                         return Promise.reject(e);
                     } finally {
@@ -79,7 +84,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         return () => axios.interceptors.response.eject(interceptor);
     }, [])
 
-    return(
+    return (
         <AuthContext.Provider value={{ user, setUser, isLoading }}>
             {children}
         </AuthContext.Provider>
