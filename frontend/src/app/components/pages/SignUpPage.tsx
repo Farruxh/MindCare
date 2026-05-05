@@ -31,7 +31,7 @@ export function SignUpPage() {
       setAlert({ message: res.data.message || "Account Successfully Created.", severity: "success" })
       navigate("/login"); 
     } catch (error: any) {
-      setAlert({ message: error.response?.data?.detail || "An error occurred during signup.", severity: "error" })
+      setAlert({ message: error.response?.data?.detail[0]?.msg || "An error occurred during signup.", severity: "error" })
     } finally {
       setLoader(false);
     }
@@ -96,7 +96,9 @@ export function SignUpPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   className="w-full pl-11 pr-11 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                  placeholder="••••••••"
+                  minLength={8}
+                  maxLength={128}
+                  placeholder="••••••••••"
                   {...register("password", { required: true })}
                 />
                 <motion.button 

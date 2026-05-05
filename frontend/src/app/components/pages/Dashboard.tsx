@@ -5,18 +5,18 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext"
-import { useTheme } from "../../context/ThemeContext"
 import { useEffect, useState } from "react"
 import Loader from "../loader/loader";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 
 export function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { setAlert } = useAlert();
-  const { setIsDarkMode } = useTheme()
   const { setUser } = useAuth()
+  useDocumentTitle("Dashboard | MindCare");
   const [loader, setLoader] = useState(false)
   const [assessmentHistory, setAssessmentHistory] = useState<{
     created_at: string;
@@ -74,15 +74,14 @@ export function Dashboard() {
     stress: row.stress_score ?? 0,
   }));
 
-  const handleOnLogout = async () => {
+  const handleLogout = async () => {
     try {
       setLoader(true)
       const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
-      setIsDarkMode(false)
-      navigate("/");
       setUser(null)
+      navigate("/");
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
     } finally {
@@ -120,7 +119,7 @@ export function Dashboard() {
                   cancelText: "Cancel",
                   onConfirm: () => {
                     closeConfirmDialog()
-                    handleOnLogout()
+                    handleLogout()
                   }
                 });
               }}
@@ -236,7 +235,7 @@ export function Dashboard() {
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity, index) => (
                   <div key={index} className="p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-                    <div className="text-sm text-muted-foreground mb-1">{new Date(activity.created_at + 'Z').toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</div>
+                    <div className="text-sm text-muted-foreground mb-1">{activity.created_at.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</div>
                     <div className="text-foreground mb-1">{activity.type}</div>
                   </div>
                 ))
@@ -246,11 +245,6 @@ export function Dashboard() {
                 </p>
               )}
             </div>
-            {/* <button
-              className="w-full mt-4 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
-            >
-              View All Sessions
-            </button> */}
           </motion.div>
         </div>
 

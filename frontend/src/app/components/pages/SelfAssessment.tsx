@@ -299,7 +299,7 @@ export function SelfAssessment() {
     });
 
     const hasSevereResult = Object.values(severities).some(s =>
-      ["Severe", "Moderately Severe", "High"].includes(s)
+      ["Severe", "Moderately Severe", "High", "Moderate"].includes(s)
     );
 
     return (
@@ -341,7 +341,7 @@ export function SelfAssessment() {
             {selectedTypes.map((type, index) => {
               const typeConfig = assessmentTypes.find((t) => t.id === type)!;
               const score = scores[type];
-              const maxScore = questionsByType[type as keyof typeof questionsByType].length * 3;
+              const maxScore = type === "stress" ? questionsByType.stress.length * 4 : questionsByType[type as keyof typeof questionsByType].length * 3;
               const percentage = (score / maxScore) * 100;
               const severity = severities[type];
               const style = getSeverityStyle(severity);
