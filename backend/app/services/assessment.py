@@ -7,6 +7,7 @@ from app.models.assessment import Assessment_Result
 from app.models.user import User
 from app.settings import settings
 from app import db
+from app.models.recent_activity import RecentActivity
 
 
 mail_connection_confg = ConnectionConfig(
@@ -57,10 +58,9 @@ def get_last_assessment(db: Session, current_user: int):
     return db.query(Assessment_Result).filter(Assessment_Result.user_id == current_user).order_by(Assessment_Result.created_at.desc()).first()
 
 def delete_assessments(db: Session, current_user: int):
-    assessments = db.query(Assessment_Result).filter(Assessment_Result.user_id == current_user).all()
     try:
-        for assessment in assessments:
-            db.delete(assessment)
+        db.query(Assessment_Result).filter(Assessment_Result.user_id == current_user).delete()
+        db.query(RecentActivity).filter(RecentActivity.user_id == current_user, RecentActivity.activity_type.like("%Assessment")).delete()
         db.commit()
     except Exception as e:
         db.rollback()
