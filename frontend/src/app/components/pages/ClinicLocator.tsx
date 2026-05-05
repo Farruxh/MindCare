@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, MapPin, Phone, ExternalLink, Home } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Loader from "../loader/loader";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom"
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 
 interface Clinic {
@@ -21,11 +22,8 @@ export function ClinicLocator() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState<string | null>(null);
   const { setAlert } = useAlert();
-  const { user, isLoading } = useAuth();
-
-  useEffect(() => {
-      if (!isLoading && !user) navigate("/login")
-    }, [isLoading, user])
+  const { user } = useAuth();
+  useDocumentTitle("Clinic Locator | MindCare");
 
   const handleCurrentLocationSearch = () => {
     if (!navigator.geolocation) {
@@ -40,10 +38,10 @@ export function ClinicLocator() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const res = await axios.get("/api/v1/clinics/nearest", {
-            params: { user_lat: latitude, user_lon: longitude },
-            withCredentials: true
-          });
+          const [res] = await Promise.all([
+            axios.get("/api/v1/clinics/nearest", {params: { user_lat: latitude, user_lon: longitude }, withCredentials: true}),
+            axios.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" }, { withCredentials: true })
+          ])
           const data = res.data.data;
 
           if (data && data.length > 0) {
@@ -60,7 +58,7 @@ export function ClinicLocator() {
           }
         } catch (error) {
           console.error("Error fetching nearest clinics:", error);
-          setAlert({ message: "Sorry, there was an error fetching clinics near your location.", severity: "info" })
+          setAlert({ message: "Sorry, there was an error fetching clinics near your location.", severity: "error" })
         } finally {
           setIsLoader(false)
         }
@@ -87,10 +85,12 @@ export function ClinicLocator() {
     setSearchQuery("Your Stored Location");
 
     try {
-      const res = await axios.get("/api/v1/clinics/nearest", {
+      const [res] = await Promise.all([
+        axios.get("/api/v1/clinics/nearest", {
         params: { user_lat: lat, user_lon: lon },
-        withCredentials: true
-      });
+        withCredentials: true}), 
+        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" }, { withCredentials: true })
+      ])
       const data = res.data.data;
 
       if (data && data.length > 0) {
@@ -107,7 +107,7 @@ export function ClinicLocator() {
       }
     } catch (error) {
       console.error("Error fetching nearest clinics:", error);
-      setAlert({ message: "Sorry, there was an error fetching clinics near your stored location.", severity: "info" });
+      setAlert({ message: "Sorry, there was an error fetching clinics near your stored location.", severity: "error" });
     } finally {
       setIsLoader(false);
     }
@@ -216,14 +216,14 @@ export function ClinicLocator() {
             className="px-6 py-3 bg-accent/10 text-accent hover:bg-accent hover:text-accent-foreground border border-accent/20 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2 group cursor-pointer flex-1"
           >
             <MapPin className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">Find Clinics Near My Current Location</span>
+            <span className="font-semibold">Find Clinics NearBy My Current Location</span>
           </button>
           <button
             onClick={handleStoredLocationSearch}
             className="px-6 py-3 bg-secondary/10 text-secondary hover:bg-secondary hover:text-secondary-foreground border border-secondary/20 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md flex items-center justify-center gap-2 group cursor-pointer flex-1"
           >
             <Home className="w-5 h-5 group-hover:scale-110 transition-transform" />
-            <span className="font-semibold">Find Clinics Near My Stored Location</span>
+            <span className="font-semibold">Find Clinics NearBy My Stored Location</span>
           </button>
         </div>
       </motion.div>
