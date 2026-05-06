@@ -59,7 +59,7 @@ mail_connection_confg = ConnectionConfig(
 def register_user(db: Session, data: UserCreate):
     existing_user = db.query(User).filter(User.email == data.email).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=409, detail="Email already registered")
     user_instance = User(**data.model_dump())
     user_instance.password = pasword_hash(data.password)
     db.add(user_instance)
@@ -174,11 +174,12 @@ def refreshAccessToken(db: Session, incomingRefreshToken: str):
 
 def updateAccountDetails(db: Session, id: int, data: UserUpdate):
     user = db.query(User).filter(User.user_id == id).first()
-    if user: 
-        for key, value in data.model_dump(exclude_unset=True).items():
-            setattr(user, key, value)
-        db.commit()
-        db.refresh(user)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found") 
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(user, key, value)
+    db.commit()
+    db.refresh(user)
     return user
 
 def updateCurrentPassword(db: Session, id: int, data: UserPasswordUpdate):
@@ -197,13 +198,16 @@ def updateCurrentPassword(db: Session, id: int, data: UserPasswordUpdate):
 
 def delete_user(db: Session, id: int):
     user =  db.query(User).filter(User.user_id == id).first()
-    if user:
-        db.delete(user)
-        db.commit()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
     return user
     
 def delete_all_users(db: Session):
     users = db.query(User).all()
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found")
     for user in users:
         db.delete(user)
     db.commit()
