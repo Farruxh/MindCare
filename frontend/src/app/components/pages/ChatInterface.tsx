@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 interface Message {
   role: string
@@ -28,6 +29,7 @@ export function ChatInterface() {
   }[]>([])
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  useDocumentTitle(chat_id ? `Chat ${chat_id} | AI Assistant | MindCare` : "AI Assistant | MindCare")
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -84,7 +86,7 @@ export function ChatInterface() {
     }
   }, [chat_id])
 
-  const handleOnDelete = async (chat_id: number) => {
+  const handleDeleteChat = async (chat_id: number) => {
     try {
       await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
@@ -94,7 +96,7 @@ export function ChatInterface() {
     }
   }
 
-  const handleSend = async () => {
+  const handleSendChat = async () => {
     if (!input.trim()) return;
 
     const userMessage: Message = {
@@ -226,7 +228,7 @@ export function ChatInterface() {
                     cancelText: "Cancel",
                     onConfirm: () => {
                       closeConfirmDialog()
-                      handleOnDelete(chat.chat_id)
+                      handleDeleteChat(chat.chat_id)
                     }
                   })
                 }}
@@ -323,13 +325,13 @@ export function ChatInterface() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyUp={(e) => e.key === "Enter" && handleSend()}
+            onKeyUp={(e) => (e.key === "Enter" && !isTyping) && handleSendChat()}
             placeholder={messages.length > 0 ? "Reply..." : "Share what's on your mind"}
-            className="flex-1 px-5 py-3 bg-input-background rounded-2xl border border-border text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+            className="flex-1 px-5 py-3 bg-input-background rounded-2xl border border-border text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
           />
           <button
-            onClick={() => handleSend()}
-            disabled={!input.trim()}
+            onClick={() => handleSendChat()}
+            disabled={!input.trim() || isTyping}
             className="px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
           >
             <Send className="w-5 h-5" />
