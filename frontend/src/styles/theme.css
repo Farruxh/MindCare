@@ -43,13 +43,13 @@
 
 .dark {
   --background: #1a1f2e;
+  --input-background: #242938;
   --foreground: #e8eaed;
   --card: #1a1f2e ;
   --card-foreground: #e8eaed;
   --popover: #242938;
   --popover-foreground: #e8eaed;
   --primary: #64748B;
-  /* #6b8e9f */
   --primary-foreground: #ffffff;
   --secondary: #5d8aa0;
   --secondary-foreground: #ffffff;
