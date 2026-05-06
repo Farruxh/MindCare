@@ -17,7 +17,7 @@ interface formData {
 }
 
 export function SignUpPage() {
-  const { register, handleSubmit } = useForm<formData>();
+  const { register, handleSubmit, formState: { errors }  } = useForm<formData>();
   const { setAlert } = useAlert();
   const navigate = useNavigate()
   const [loader, setLoader] = useState(false);
@@ -31,7 +31,7 @@ export function SignUpPage() {
       setAlert({ message: res.data.message || "Account Successfully Created.", severity: "success" })
       navigate("/login"); 
     } catch (error: any) {
-      setAlert({ message: error.response?.data?.detail[0]?.msg || "An error occurred during signup.", severity: "error" })
+      setAlert({ message: error.response?.data?.detail || "An error occurred during signup.", severity: "error" })
     } finally {
       setLoader(false);
     }
@@ -71,8 +71,11 @@ export function SignUpPage() {
                   type="text"
                   className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                   placeholder="John Doe"
-                  {...register("name", { required: true })}
+                  {...register("name", { required: "Name is required" })}
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                )}
               </div>
             </div>
 
@@ -84,8 +87,11 @@ export function SignUpPage() {
                   type="email"
                   className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                   placeholder="your.email@example.com"
-                  {...register("email", { required: true })}
+                  {...register("email", { required: "Email is required" })}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -99,8 +105,11 @@ export function SignUpPage() {
                   minLength={8}
                   maxLength={128}
                   placeholder="••••••••••"
-                  {...register("password", { required: true })}
+                  {...register("password", { required: "Password is required" })}
                 />
+                 {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  )} 
                 <motion.button 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
                   type="button" 
@@ -109,7 +118,7 @@ export function SignUpPage() {
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </motion.button>
-              </div>
+              </div> 
             </div>
 
             <div>
@@ -133,6 +142,11 @@ export function SignUpPage() {
                   <span>Female</span>
                 </label>
               </div>
+              {errors.gender && (
+                    <p className="text-red-500 text-sm text-center mt-1">
+                      Please select gender
+                    </p>
+                  )}
             </div>
 
             <button

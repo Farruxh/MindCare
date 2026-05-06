@@ -16,7 +16,7 @@ interface formData {
 
 export function LoginPage() {
   const [loader, setLoader] = useState(false)
-  const { register, handleSubmit } = useForm<formData>();
+  const { register, handleSubmit, formState: { errors } } = useForm<formData>();
   const navigate = useNavigate()
   const { setAlert } = useAlert();
   const { setUser} = useAuth()
@@ -70,8 +70,11 @@ export function LoginPage() {
                   type="email"
                   className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                   placeholder="your.email@example.com"
-                  {...register("email", { required: true })}
+                  {...register("email", { required: "Email is required" })}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                )}
               </div>
             </div>
 
@@ -83,8 +86,11 @@ export function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   className="w-full pl-11 pr-11 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                   placeholder="••••••••"
-                  {...register("password", { required: true })}
+                  {...register("password", { required: "Password is required" })}
                 />
+                {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  )}
                 <motion.button 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
                   type="button" 
