@@ -10,7 +10,10 @@ router = APIRouter(prefix="/api/v1/users" , tags = ["Users"])
 
 @router.post("/register-user", response_model = ApiResponse[User])
 def register_new_user(data: UserCreate, db: Session = Depends(get_db)):
-    user = register_user(db, data)
+    try:
+        user = register_user(db, data)
+    except Exception as e:
+        raise HTTPException(status_code=409, detail=str(e))
     return ApiResponse(
         status_code=201, 
         data=user, 
@@ -136,29 +139,44 @@ def update_account(
     db: Session = Depends(get_db), 
     current_user: int = Depends(auth_dependency)
     ):
-    user_update = updateAccountDetails(db, current_user, data)
+    try:
+        user_update = updateAccountDetails(db, current_user, data)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
     return ApiResponse(status_code=200, data=user_update, message="Account information updated successfully")
 
 @router.patch("/update-current-password", response_model = ApiResponse[UserResponse])
 def updatePassword(data: UserPasswordUpdate, db: Session = Depends(get_db), current_user: int = Depends(auth_dependency)):
-    user = updateCurrentPassword(db, current_user, data)
+    try:
+        user = updateCurrentPassword(db, current_user, data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return ApiResponse(status_code=200, data=user, message="Password Updated Successfully")
 
 @router.delete("/delete-account", response_model = ApiResponse[UserResponse])
 def user_delete(response: Response, db: Session = Depends(get_db), current_user: int = Depends(auth_dependency)):
-    delete_user(db, current_user)
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="refresh_token")
+    try:
+        delete_user(db, current_user)
+        response.delete_cookie(key="access_token")
+        response.delete_cookie(key="refresh_token")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
     return ApiResponse(status_code=200, message="Account deleted successfully")
 
 @router.delete("/deleteAll")
 def delete_all(db: Session = Depends(get_db)):
-    delete_all_users(db)
-    return "Deleted Successfully"
+    try:    
+        delete_all_users(db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return ApiResponse(status_code=200, message="All users deleted successfully")
 
 @router.post("/recent-activity/create", response_model=ApiResponse[ActivityOut])
 def create_recent_activity(data: ActivityCreate, current_user: int = Depends(auth_dependency), db: Session = Depends(get_db)):
-    recent_activity = insert_recent_activity(data, db, current_user)
+    try:
+        recent_activity = insert_recent_activity(data, db, current_user)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Something went wrong while creating recent activity")
     return ApiResponse(status_code=201, data=recent_activity, message="Recent activity created successfully")
 
 @router.get("/recent-activity/get", response_model = ApiResponse[list[ActivityOut]])
