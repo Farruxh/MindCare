@@ -8,6 +8,10 @@ class ClinicAdd(BaseModel):
     latitude: float
     longitude: float
 
+class ClinicUpdate(BaseModel):
+    latitude: float | None = None
+    longitude: float | None = None
+
 class Clinic(ClinicAdd):
     clinic_id: int
     created_at: datetime | None = None

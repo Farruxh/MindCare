@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.schemas.ApiResponse import ApiResponse
 from app.db import get_db
-from app.services.clinic import create_clinic, get_nearest_clinics, delete_clinic, get_all_clinics
-from app.schemas.clinic import ClinicAdd, Clinic
+from app.services.clinic import create_clinic, get_nearest_clinics, delete_clinic, get_all_clinics, update_clinic
+from app.schemas.clinic import ClinicAdd, Clinic, ClinicUpdate
 
 router = APIRouter(prefix="/api/v1/clinics", tags=["Clinics"])
 
@@ -13,6 +13,16 @@ def create_new_clinic(clinic_data: ClinicAdd, db: Session = Depends(get_db)):
     try:
         clinic = create_clinic(db, clinic_data)
         return ApiResponse(status_code=201, data=clinic, message="Clinic created successfully")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.put("/update/{clinic_id}", response_model=ApiResponse[Clinic])
+def update_existing_clinic(clinic_id: int, clinic_data: ClinicUpdate, db: Session = Depends(get_db)):
+    try:
+        clinic = update_clinic(db, clinic_id, clinic_data)
+        return ApiResponse(status_code=200, data=clinic, message="Clinic updated successfully")
+    except HTTPException as httpe:
+        raise httpe
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
