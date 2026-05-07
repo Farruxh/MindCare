@@ -32,15 +32,15 @@ export function ProfilePage() {
     onConfirm: () => { },
   });
   const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }));
-  
+
   const [isEditProfile, setIsEditProfile] = useState(false)
   const [isEmailPreference, setIsEmailPreference] = useState(true)
   const { user, setUser } = useAuth()
   const navigate = useNavigate();
   const { setAlert } = useAlert();
-  const { register: register1, handleSubmit: handleSubmit1 } = useForm<accountFormData>()
-  const { register: register, handleSubmit: handleSubmit } = useForm<formData>()
-  const [ isDarkMode, setIsDarkMode ] = useState<"light" | "dark">("light")
+  const { register: register1, handleSubmit: handleSubmit1, trigger: trigger1 } = useForm<accountFormData>()
+  const { register: register, handleSubmit: handleSubmit, trigger: trigger } = useForm<formData>()
+  const [isDarkMode, setIsDarkMode] = useState<"light" | "dark">("light")
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false)
@@ -258,7 +258,7 @@ export function ProfilePage() {
                   <input
                     type="text"
                     defaultValue={user?.name || ""}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background text-gray-900 rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-3 bg-input-background text-foreground rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register1("name", { required: true })}
                   />
                 </div>
@@ -270,7 +270,7 @@ export function ProfilePage() {
                   <input
                     type="email"
                     defaultValue={user?.email || ""}
-                    className="w-full pl-11 pr-4 py-3 bg-input-background text-gray-900 rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    className="w-full pl-11 pr-4 py-3 bg-input-background text-foreground rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register1("email", { required: true })}
                   />
                 </div>
@@ -279,19 +279,22 @@ export function ProfilePage() {
             <button
               type="button"
               className="w-full px-5 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
-              onClick={() => {
-                setConfirmDialog({
-                  open: true,
-                  title: "Confirm Update Account Information",
-                  text: "Are you sure you want to update your account information?",
-                  confirmText: "Update",
-                  cancelText: "Cancel",
-                  onConfirm: () => {
-                    handleSubmit1(handleUpdateAccountDetail)();
-                    closeConfirmDialog();
-                  }
-                })
-              }}
+              onClick={async () => {
+                if (await trigger1()) {
+                  setConfirmDialog({
+                    open: true,
+                    title: "Confirm Update Account Information",
+                    text: "Are you sure you want to update your account information?",
+                    confirmText: "Update",
+                    cancelText: "Cancel",
+                    onConfirm: () => {
+                      handleSubmit1(handleUpdateAccountDetail)();
+                      closeConfirmDialog();
+                    }
+                  })
+                }
+              }
+              }
             >
               Update Account Information
             </button>
@@ -317,14 +320,14 @@ export function ProfilePage() {
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     {...register("currentPassword", { required: true })}
                   />
-                  <motion.button 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
-                  type="button" 
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </motion.button>
+                  <motion.button
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </motion.button>
                 </div>
               </div>
               <div>
@@ -334,16 +337,18 @@ export function ProfilePage() {
                   <input
                     type={showNewPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    {...register("newPassword", { required: true })}
+                    minLength={8}
+                    maxLength={128}
+                    {...register("newPassword", { required: true, minLength: 8, maxLength: 128 })}
                   />
-                  <motion.button 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
-                  type="button" 
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </motion.button>
+                  <motion.button
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </motion.button>
                 </div>
               </div>
               <div>
@@ -353,34 +358,39 @@ export function ProfilePage() {
                   <input
                     type={showConfirmNewPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    {...register("confirmPassword", { required: true })}
+                    minLength={8}
+                    maxLength={128}
+                    {...register("confirmPassword", { required: true, minLength: 8, maxLength: 128 })}
                   />
-                  <motion.button 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
-                  type="button" 
-                  onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {showConfirmNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </motion.button>
+                  <motion.button
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
+                    type="button"
+                    onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {showConfirmNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </motion.button>
                 </div>
               </div>
               <button
                 type="button"
                 className="px-5 py-2 mt-2 w-full bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 cursor-pointer"
-                onClick={() => {
-                  setConfirmDialog({
-                    open: true,
-                    title: "Confirm Update Current Password",
-                    text: "Are you sure you want to update your current password?",
-                    confirmText: "Update",
-                    cancelText: "Cancel",
-                    onConfirm: () => {
-                      handleSubmit(handleUpdatePassword)();
-                      closeConfirmDialog();
-                    }
-                  })
-                }}
+                onClick={async () => {
+                  if (await trigger()) {
+                    setConfirmDialog({
+                      open: true,
+                      title: "Confirm Update Current Password",
+                      text: "Are you sure you want to update your current password?",
+                      confirmText: "Update",
+                      cancelText: "Cancel",
+                      onConfirm: () => {
+                        handleSubmit(handleUpdatePassword)();
+                        closeConfirmDialog();
+                      }
+                    })
+                  }
+                }
+                }
               >
                 Update Password
               </button>

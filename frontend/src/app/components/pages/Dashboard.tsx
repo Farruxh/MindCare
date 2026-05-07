@@ -21,8 +21,11 @@ export function Dashboard() {
   const [assessmentHistory, setAssessmentHistory] = useState<{
     created_at: string;
     anxiety_score: number | null;
+    anxiety_severity: string | null;
     depression_score: number | null;
+    depression_severity: string | null;
     stress_score: number | null;
+    stress_severity: string | null;
   }[]>([])
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -70,8 +73,11 @@ export function Dashboard() {
   const chartData = assessmentHistory.map((row) => ({
     date: new Date(row.created_at).toLocaleDateString(),
     anxiety: row.anxiety_score ?? 0,
+    anxiety_severity: row.anxiety_severity ?? "None",
     depression: row.depression_score ?? 0,
+    depression_severity: row.depression_severity ?? "None",
     stress: row.stress_score ?? 0,
+    stress_severity: row.stress_severity ?? "None"
   }));
 
   const handleLogout = async () => {
@@ -195,11 +201,17 @@ export function Dashboard() {
                         border: "1px solid #e8eaed",
                         borderRadius: "12px",
                         padding: "12px"
+                    }}
+                    formatter={(value: number, name: string, props: any) => {
+                      const severity = props.payload[`${name}_severity` as keyof typeof props.payload];
+                      const label = name.charAt(0).toUpperCase() + name.slice(1);
+                      return severity ? [`${value} (${severity})`, label] : [value, label];
                       }}
                     />
                     <Line type="monotone" dataKey="stress" stroke="#DC2626" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
-                    <Line type="monotone" dataKey="depression" stroke="#1E3A5F" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
                     <Line type="monotone" dataKey="anxiety" stroke="#4B5563" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
+                    <Line type="monotone" dataKey="depression" stroke="#1E3A5F" strokeWidth={3} activeDot={{ r: 7 }} dot={false} />
+                    
                   </LineChart>
                 </ResponsiveContainer>
                 <div className="mt-4 p-4 bg-muted/30 rounded-xl">
