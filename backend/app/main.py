@@ -9,7 +9,7 @@ from app.models.chat_history import Chat_History
 from app.models.message import Message
 from app.models.clinic import Clinic
 from app.models.pass_token import Password_Token
-from app.models.recent_activity import RecentActivity
+from app.models.daily_journal import DailyJournal
 from app.settings import settings
 
 
@@ -31,12 +31,14 @@ from app.routes import assessment
 from app.routes import chat_history
 from app.routes import message
 from app.routes import clinic
+from app.routes import daily_journal
 
 app.include_router(user.router)
 app.include_router(assessment.router)
 app.include_router(chat_history.router)
 app.include_router(message.router)
 app.include_router(clinic.router)
+app.include_router(daily_journal.router)
 
 
 @app.exception_handler(HTTPException)
