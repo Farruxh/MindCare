@@ -122,8 +122,8 @@ export function ChatInterface() {
         axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
       ])
       const chat_id = chatRes.data?.data.chat_id
-      navigate(`/assistant/${chat_id}`)
       res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+      navigate(`/assistant/${chat_id}`)
       } 
       else {
         res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
@@ -155,6 +155,7 @@ export function ChatInterface() {
       >
         <button
           className="p-2 hover:bg-muted rounded-xl transition-colors cursor-pointer"
+          title="Dashboard"
           onClick={() => navigate("/dashboard")}
         >
           <ArrowLeft className="w-5 h-5" />

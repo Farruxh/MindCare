@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Brain, MessageCircle, ClipboardList, MapPin, Sparkles } from "lucide-react";
+import { Brain, MessageCircle, ClipboardList, MapPin, Sparkles, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -25,9 +25,9 @@ export function LandingPage() {
       description: "Evaluate your mental well-being with guided questions",
     },
     {
-      icon: <Sparkles className="w-6 h-6" />,
-      title: "Meditation Exercises",
-      description: "Find peace with guided relaxation techniques",
+      icon: <BookOpen className="w-6 h-6" />,
+      title: "Daily Journal",
+      description: "Write your daily thoughts to uncover weekly mental health insights"
     },
     {
       icon: <MapPin className="w-6 h-6" />,
@@ -90,7 +90,7 @@ export function LandingPage() {
         {/* Feature Cards */}
         <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
           {features.map((feature, index) => (
-            <motion.button
+            <motion.div
               key={feature.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -106,7 +106,7 @@ export function LandingPage() {
                   <p className="text-muted-foreground">{feature.description}</p>
                 </div>
               </div>
-            </motion.button>
+            </motion.div>
           ))}
         </div>
 
