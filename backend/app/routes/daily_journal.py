@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.schemas.daily_journal import DailyJournalCreate, DailyJournalResponse
 from app.schemas.ApiResponse import ApiResponse
-from app.services.daily_journal import create_journal_entry, get_user_journals
+from app.services.daily_journal import create_journal_entry, get_user_journals, get_weekly_journals
 from app.dependency.auth import auth_dependency
 from typing import List
 
@@ -29,5 +29,16 @@ def get_all_journals(
     try:
         journals = get_user_journals(db, current_user)
         return ApiResponse(status_code=200, data=journals, message="Journal entries fetched successfully")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/weekly", response_model=ApiResponse[List[DailyJournalResponse]])
+def get_weekly_journal(
+    db: Session = Depends(get_db),
+    current_user: int = Depends(auth_dependency)
+):
+    try:
+        journals = get_weekly_journals(db, current_user)
+        return ApiResponse(status_code=200, data=journals, message="Weekly journal entries fetched successfully")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

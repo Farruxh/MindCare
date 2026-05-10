@@ -1,7 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.models.chat_history import Chat_History
-from app.schemas.chat_history import ChatResponse
+from app.models.recent_activity import RecentActivity
+from datetime import timedelta
 
 
 def create_chat_history(db: Session, current_user: int):
@@ -24,6 +26,12 @@ def get_chat_by_id(db: Session, chat_id: int):
 
 def del_chat_history_by_id(db: Session, chat_id: int):
     chat = db.query(Chat_History).filter(Chat_History.chat_id == chat_id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat history not found")
+    db.query(RecentActivity).filter(
+        RecentActivity.created_at >= chat.created_at - timedelta(seconds=1), 
+        RecentActivity.created_at <= chat.created_at + timedelta(seconds=1), 
+        RecentActivity.activity_type.like("%Assistant")).delete()
     db.delete(chat)
     db.commit()
     return "True"
