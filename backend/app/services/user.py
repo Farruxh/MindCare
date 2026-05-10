@@ -215,8 +215,14 @@ def delete_all_users(db: Session):
 def insert_recent_activity(activity_type: ActivityCreate, db: Session, user_id: int):
     recent_activity_instance = RecentActivity(user_id=user_id, activity_type=activity_type.activity_type)
     db.add(recent_activity_instance)
+
+    recent_activty = db.query(RecentActivity).filter(RecentActivity.user_id == user_id).order_by(RecentActivity.created_at.desc()).offset(4).all()
+    for activity in recent_activty:
+        db.delete(activity)
+    
     db.commit()
     db.refresh(recent_activity_instance)
+
     return recent_activity_instance
 
 def get_recent_activities(db: Session, user_id: int):
