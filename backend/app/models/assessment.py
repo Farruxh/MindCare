@@ -1,4 +1,4 @@
-from app.main import Base
+from app.db import Base
 from sqlalchemy import Column, VARCHAR, Integer, ForeignKey, DateTime, func
 
 class Assessment_Result(Base):
