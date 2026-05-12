@@ -15,6 +15,7 @@ import { MeditationPage } from "./components/pages/MeditationPage.tsx";
 import { ClinicLocator } from "./components/pages/ClinicLocator.tsx"
 import { ProtectedRoute } from "./components/ProtectedRoute.tsx";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
+import {WeeklyReport} from "./components/pages/WeeklyReport.tsx";
 
 export default function AppRoutes() {
     return (
@@ -41,6 +42,7 @@ export default function AppRoutes() {
                             { path: "assistant/:chat_id?", element: <ChatInterface /> },
                             { path: "assessment", element: <SelfAssessment /> },
                             { path: "daily-journal", element: <DailyJournal /> },
+                            { path: "weekly-report", element: <WeeklyReport /> },
                             { path: "meditation", element: <MeditationPage /> },
                             { path: "clinics", element: <ClinicLocator /> },
                             { path: "profile", element: <ProfilePage /> }

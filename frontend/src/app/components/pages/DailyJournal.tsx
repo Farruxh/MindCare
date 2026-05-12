@@ -2,96 +2,105 @@ import { motion } from "motion/react";
 import { ArrowLeft, BookOpen, Calendar, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
-
-interface DailyJournalProps {
-  onNavigate: (page: string) => void;
-}
+import { useAlert } from "../../context/AlertContext";
+import Loader from "../loader/loader";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
+import axios from "axios";
 
 interface JournalEntry {
-  id: string;
-  date: string;
   content: string;
+  created_at: string;
 }
 
 export function DailyJournal() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [currentEntry, setCurrentEntry] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
   const [viewMode, setViewMode] = useState<"write" | "history">("write");
+  const [loader, setLoader] = useState(false);
   const navigate = useNavigate()
+  const { setAlert } = useAlert()
+  useDocumentTitle("Daily Journal | MindCare");
 
-  // Load entries from localStorage on mount
   useEffect(() => {
-    const savedEntries = localStorage.getItem("journalEntries");
-    if (savedEntries) {
-      setEntries(JSON.parse(savedEntries));
-    }
-
-    // Check if there's a draft for today
-    const today = new Date().toISOString().split("T")[0];
-    const todayEntry = savedEntries ? JSON.parse(savedEntries).find((e: JournalEntry) => e.date === today) : null;
-    if (todayEntry) {
-      setCurrentEntry(todayEntry.content);
-    }
+    const fetchEntries = async () => {
+      try {
+        setLoader(true);
+        const res = await axios.get("/api/v1/journal/all", { withCredentials: true });
+        setEntries(res.data.data ?? []);
+      } catch (error: any) {
+        setAlert({ message: error.response?.data?.detail || "Failed to load journal entries.", severity: "error" });
+      } finally {
+        setLoader(false);
+      }
+    };
+    fetchEntries();
   }, []);
 
-  const handleSubmit = () => {
-    const today = new Date().toISOString().split("T")[0];
-    const newEntry: JournalEntry = {
-      id: Date.now().toString(),
-      date: today,
-      content: currentEntry
-    };
+  const handleSubmit = async () => {
+    if (!currentEntry.trim()) return;
 
-    // Remove any existing entry for today before adding new one
-    const filteredEntries = entries.filter(e => e.date !== today);
-    const updatedEntries = [...filteredEntries, newEntry];
-    
-    setEntries(updatedEntries);
-    localStorage.setItem("journalEntries", JSON.stringify(updatedEntries));
-    
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 2000);
+    try {
+      setLoader(true);
+      const [res] = await Promise.all([
+        axios.post("/api/v1/journal/create", { 
+          content: currentEntry 
+        }, { withCredentials: true }),
+        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Created a journal entry" }, { withCredentials: true })
+      ]);
+      
+      setAlert({ message: res.data?.message || "Entry saved successfully!", severity: "success" });
+      setCurrentEntry("");
+
+      // Refresh entries list to show the new/appended entry in history
+      const entriesRes = await axios.get("/api/v1/journal/all", { withCredentials: true });
+      setEntries(entriesRes.data.data ?? []);
+      
+    } catch (error: any) {
+      setAlert({ message: error.response?.data?.detail || "Failed to save entry.", severity: "error" });
+    } finally {
+      setLoader(false);
+    }
   };
-
-  const canViewReport = entries.length >= 7;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { 
+    const formattedDate = date.toLocaleDateString("en-US", { 
       weekday: "short", 
       year: "numeric", 
       month: "short", 
       day: "numeric" 
     });
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+    return `${formattedDate} at ${formattedTime}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100">
+    <div className="background">
+      {loader && <Loader />}
       {/* Header */}
-      <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <button
-            onClick={() => navigate("/dashboard") }
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Dashboard
-          </button>
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-primary" />
-            <span className="text-xl">Daily Journal</span>
+      <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
+          <div className="max-w-4xl mx-auto flex justify-between items-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Dashboard
+            </button>
           </div>
         </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* View Toggle & Weekly Report Button */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               onClick={() => setViewMode("write")}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
+              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${
                 viewMode === "write"
                   ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-muted-foreground hover:text-foreground"
@@ -101,7 +110,7 @@ export function DailyJournal() {
             </button>
             <button
               onClick={() => setViewMode("history")}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 ${
+              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${
                 viewMode === "history"
                   ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-muted-foreground hover:text-foreground"
@@ -112,17 +121,13 @@ export function DailyJournal() {
           </div>
 
           <button
-            // onClick={() => onNavigate("weekly-report")}
-            disabled={!canViewReport}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 ${
-              canViewReport
-                ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+            onClick={() => navigate("/weekly-report")}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 w-full sm:w-auto ${
+                "bg-secondary text-secondary-foreground hover:bg-secondary/90 cursor-pointer"
             }`}
           >
             <TrendingUp className="w-4 h-4" />
             Weekly Report
-            {!canViewReport && <span className="text-xs">({entries.length}/7)</span>}
           </button>
         </div>
 
@@ -133,7 +138,7 @@ export function DailyJournal() {
             animate={{ opacity: 1, y: 0 }}
           >
             {/* Date Display */}
-            <div className="flex items-center justify-center gap-2 mb-6 text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
               <Calendar className="w-5 h-5" />
               <span className="text-lg">{new Date().toLocaleDateString("en-US", { 
                 weekday: "long", 
@@ -147,13 +152,13 @@ export function DailyJournal() {
             <div className="relative">
               {/* Notebook Paper Effect */}
               <div 
-                className="bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden relative"
+                className="bg-input-background rounded-lg shadow-2xl border overflow-hidden relative"
                 style={{
                   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)"
                 }}
               >
                 {/* Red Margin Line */}
-                <div className="absolute left-16 top-0 bottom-0 w-0.5 bg-red-300/40 z-10"></div>
+                <div className="sm:absolute left-16 top-0 bottom-0 w-0.5 bg-red-300/40 z-10"></div>
                 
                 {/* Ruled Lines Background */}
                 <div 
@@ -167,7 +172,7 @@ export function DailyJournal() {
                 ></div>
 
                 {/* Writing Area */}
-                <div className="relative p-12 pl-20">
+                <div className="relative p-12 sm:pl-20">
                   <textarea
                     value={currentEntry}
                     onChange={(e) => setCurrentEntry(e.target.value)}
@@ -176,8 +181,7 @@ export function DailyJournal() {
 Write about your day here..."
                     className="w-full h-96 bg-transparent border-none resize-none focus:outline-none text-slate-800 placeholder:text-slate-400"
                     style={{
-                      fontFamily: "'Merriweather', serif",
-                      fontSize: "16px",
+                      color: "var(--foreground)",
                       lineHeight: "40px",
                       letterSpacing: "0.01em",
                       paddingTop: "0px"
@@ -191,23 +195,11 @@ Write about your day here..."
                 <button
                   onClick={handleSubmit}
                   disabled={!currentEntry.trim()}
-                  className="px-8 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg"
+                  className="px-8 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
                 >
                   Submit
                 </button>
               </div>
-
-              {/* Success Message */}
-              {showSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border-2 border-primary rounded-2xl px-8 py-4 shadow-2xl"
-                >
-                  <p className="text-primary text-center">Entry saved successfully!</p>
-                </motion.div>
-              )}
             </div>
           </motion.div>
         )}
@@ -227,23 +219,22 @@ Write about your day here..."
               </div>
             ) : (
               [...entries]
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 .map((entry, index) => (
                   <motion.div
-                    key={entry.id}
+                    key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white rounded-lg shadow-md border border-slate-200 p-8 hover:shadow-lg transition-all duration-300"
+                    className="bg-input-background rounded-md shadow-md border p-8 hover:shadow-lg transition-all duration-300"
                   >
                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
                       <Calendar className="w-5 h-5 text-primary" />
-                      <span className="text-foreground">{formatDate(entry.date)}</span>
+                      <span className="text-foreground">{formatDate(entry.created_at)}</span>
                     </div>
                     <p 
-                      className="text-slate-700 whitespace-pre-wrap"
+                      className="text-foreground whitespace-pre-wrap"
                       style={{
-                        fontFamily: "'Merriweather', serif",
                         fontSize: "15px",
                         lineHeight: "1.8"
                       }}
