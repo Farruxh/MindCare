@@ -7,6 +7,9 @@ from app.models.clinic import Clinic
 from haversine import haversine, Unit
 
 def create_clinic(db: Session, clinic_data: ClinicAdd):
+    existed_clinic = db.query(Clinic).filter(Clinic.name == clinic_data.name).first()
+    if existed_clinic:
+        raise HTTPException(status_code=400, detail="Clinic with this name already exists")
     try:
         clinic_instance = Clinic(**clinic_data.model_dump())
         db.add(clinic_instance)

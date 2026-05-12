@@ -20,7 +20,7 @@ class UserUpdate(BaseModel):
     email: EmailStr | None = None
     latitude: float | None = None
     longitude: float | None = None
-    email_notifications: bool | None = None
+    is_email_notification: bool | None = None
 
 class ThemeUpdate(BaseModel):
     theme: Literal['light', 'dark']
@@ -44,8 +44,8 @@ class UserResponse(BaseModel):
     user_id: int
     name: str
     email: str
-    isDarkMode: str
-    email_notifications: bool
+    dark_mode: str
+    is_email_notification: bool
     latitude: float | None = None
     longitude: float | None = None
     created_at: datetime
