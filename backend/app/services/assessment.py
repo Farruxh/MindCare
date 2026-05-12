@@ -6,7 +6,6 @@ from app.schemas.assessment import AssessmentCreate
 from app.models.assessment import Assessment_Result
 from app.models.user import User
 from app.settings import settings
-from app import db
 from app.models.recent_activity import RecentActivity
 
 
@@ -28,7 +27,7 @@ async def create_assessment(db: Session, assessment_data: AssessmentCreate, curr
         db.add(assessment_instance)
         db.commit()
         db.refresh(assessment_instance)
-        if user.email_notifications:
+        if user.is_email_notification:
             mail_message = MessageSchema(
                 subject="Your Assessment Results 🌿",
                 recipients=[user.email],

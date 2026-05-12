@@ -83,7 +83,7 @@ def update_user_dark_mode(db: Session, user_id: int, is_dark_mode: ThemeUpdate):
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user.isDarkMode = is_dark_mode.theme
+    user.dark_mode = is_dark_mode.theme
     db.commit()
 
 def get_users(db: Session):
@@ -97,7 +97,7 @@ async def forget_password(db: Session, email: UserForgotPassword):
     if not user:
         raise HTTPException(status_code=404, detail="Email not found in our database")
     
-    db.query(Password_Token).filter(Password_Token.user_email == email).delete()
+    db.query(Password_Token).filter(Password_Token.user_id == user.user_id).delete()
     db.commit()
 
     token = str(secrets.randbelow(10000))
@@ -105,7 +105,7 @@ async def forget_password(db: Session, email: UserForgotPassword):
     expiry_local = expiry.astimezone(timezone(timedelta(hours=5))).strftime('%I:%M:%S')
 
     token_instance = Password_Token(
-        user_email=email,
+        user_id=user.user_id,
         token=token,
         expires_at=expiry,
         is_verified=False
@@ -150,7 +150,7 @@ def reset_password(db: Session, data: UserResetPassword, reset_token: str):
     if data.new_password != data.confirm_new_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
     
-    user = db.query(User).filter(User.email == record.user_email).first()
+    user = db.query(User).filter(User.user_id == record.user_id).first()
     user.password = pasword_hash(data.new_password)
 
     db.delete(record)
