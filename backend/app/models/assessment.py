@@ -2,7 +2,7 @@ from app.db import Base
 from sqlalchemy import Column, VARCHAR, Integer, ForeignKey, DateTime, func
 
 class Assessment_Result(Base):
-    __tablename__ = "assessment_result"
+    __tablename__ = "assessment_results"
     result_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     anxiety_score = Column(Integer)

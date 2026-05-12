@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, func
 from app.db import Base
 
 class Clinic(Base):
-    __tablename__ = "Clinic"
+    __tablename__ = "clinics"
     clinic_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, index=True)
     location = Column(String)
