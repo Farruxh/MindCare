@@ -5,6 +5,7 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import axios from "axios"
 import { useAlert } from "../../context/AlertContext.tsx";
 import { useState } from "react"
+import Loader from "../loader/loader.tsx"
 
 interface formData {
     new_password: string
@@ -17,19 +18,24 @@ export function ResetPassword() {
     const navigate = useNavigate()
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [loader, setLoader] = useState(false)
 
     const handleOnSubmit: SubmitHandler<formData> = async (data) => {
         try {
+            setLoader(true);
             const res = await axios.patch("/api/v1/users/reset-password", data, { withCredentials: true });
             setAlert({ message: res.data?.message || "Password Reset Successfully.", severity: "success" })
             navigate("/login");
         } catch (error: any) {
             console.log(error.response.data);
             setAlert({ message: error.response?.data?.detail || "An error occurred while resetting password.", severity: "error" })
+        } finally {
+            setLoader(false);
         }
     };
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center px-6 py-12">
+            {loader && <Loader />}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -60,8 +66,10 @@ export function ResetPassword() {
                                 <input
                                     type={showNewPassword ? "text" : "password"}
                                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                                    minLength={8}
+                                    maxLength={128}
                                     placeholder="••••••••"
-                                    {...register("new_password", { required: true })}
+                                    {...register("new_password", { required: true, minLength: 8, maxLength: 128 })}
                                 />
                                 <motion.button
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -81,8 +89,10 @@ export function ResetPassword() {
                                 <input
                                     type={showConfirmPassword ? "text" : "password"}
                                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                                    minLength={8}
+                                    maxLength={128}
                                     placeholder="••••••••"
-                                    {...register("confirm_new_password", { required: true })}
+                                    {...register("confirm_new_password", { required: true, minLength: 8, maxLength: 128 })}
                                 />
                                 <motion.button
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"

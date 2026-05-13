@@ -5,12 +5,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth()
     
     useEffect(() => {
-        if (user && user.isDarkMode === "dark") {
+        if (user && user.dark_mode === "dark") {
             document.documentElement.classList.add("dark")
         } else {
             document.documentElement.classList.remove("dark")
         }        
-    }, [user?.isDarkMode])
+    }, [user?.dark_mode])
 
     return <>{children}</>
 }
