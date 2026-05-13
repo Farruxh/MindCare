@@ -48,11 +48,11 @@ export function ProfilePage() {
   useDocumentTitle("Profile | MindCare");
 
   useEffect(() => {
-    if (user?.isDarkMode) {
-      setIsDarkMode(user.isDarkMode);
+    if (user?.dark_mode) {
+      setIsDarkMode(user.dark_mode);
     }
-    if (user && user.email_notifications !== undefined) {
-      setIsEmailPreference(user.email_notifications);
+    if (user && user.is_email_notification !== undefined) {
+      setIsEmailPreference(user.is_email_notification);
     }
   }, [user]);
 
@@ -77,7 +77,7 @@ export function ProfilePage() {
       await axios.patch("/api/v1/users/update-dark-mode", { theme: newTheme }, { withCredentials: true })
       setIsDarkMode(newTheme)
       if (user) {
-        setUser({ ...user, isDarkMode: newTheme });
+        setUser({ ...user, dark_mode: newTheme });
       }
     } catch (error: any) {
       setAlert({ message: error.response?.data.detail || "Failed to Update Theme Preference", severity: "error" });
@@ -91,10 +91,10 @@ export function ProfilePage() {
     const newPreference = !isEmailPreference;
     try {
       setLoader(true)
-      await axios.patch("/api/v1/users/update-account", { email_notifications: newPreference }, { withCredentials: true })
+      await axios.patch("/api/v1/users/update-account", { is_email_notification: newPreference }, { withCredentials: true })
       setIsEmailPreference(newPreference)
       if (user) {
-        setUser({ ...user, email_notifications: newPreference });
+        setUser({ ...user, is_email_notification: newPreference });
       }
     } catch (error: any) {
       setAlert({ message: error.response?.data.detail || "Failed to Update Email Preference", severity: "error" });

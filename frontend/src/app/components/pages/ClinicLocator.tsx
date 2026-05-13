@@ -50,7 +50,7 @@ export function ClinicLocator() {
                 name: clinic.name,
                 address: clinic.location,
                 phone: clinic.contact_no,
-                mapUrl: `https://www.google.com/maps/search/?api=1&query=${clinic.latitude},${clinic.longitude}`
+                mapUrl: `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${clinic.latitude},${clinic.longitude}`
               }))
             );
           } else {
@@ -99,7 +99,7 @@ export function ClinicLocator() {
             name: clinic.name,
             address: clinic.location,
             phone: clinic.contact_no,
-            mapUrl: `https://www.google.com/maps/search/?api=1&query=${clinic.latitude},${clinic.longitude}`
+            mapUrl: `https://www.google.com/maps/dir/?api=1&origin=${lat},${lon}&destination=${clinic.latitude},${clinic.longitude}`
           }))
         );
       } else {
@@ -178,12 +178,14 @@ export function ClinicLocator() {
                       </div>
                       <span className="mt-1 leading-relaxed">{clinic.address}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <div className="p-2 bg-secondary/10 rounded-lg shrink-0">
-                        <Phone className="w-4 h-4 text-secondary" />
+                    {clinic.phone && (
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <div className="p-2 bg-secondary/10 rounded-lg shrink-0">
+                          <Phone className="w-4 h-4 text-secondary" />
+                        </div>
+                        <span className="font-medium">{clinic.phone}</span>
                       </div>
-                      <span className="font-medium">{clinic.phone}</span>
-                    </div>
+                    )}
                   </div>
                   <div className="flex justify-center mt-auto">
                     <a

@@ -6,10 +6,10 @@ interface userType {
     user_id: number
     name: string
     email: string
-    isDarkMode: "light" | "dark"
+    dark_mode: "light" | "dark"
     latitude: number
     longitude: number
-    email_notifications: boolean
+    is_email_notification: boolean
     created_at: string
 }
 
@@ -42,7 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                         setUser(retryRes.data.data);
                         return;
                     } catch (refreshError) {
+                        setAlert({ message: "Session expired. Please log in again.", severity: "error" });
                         setUser(null);
+                        localStorage.clear();
                     } finally {
                         isRefreshing = false
                     }
@@ -72,6 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     } catch (e) {
                         setAlert({ message: "Session expired. Please log in again.", severity: "error" });
                         setUser(null);
+                        localStorage.clear();
                         return Promise.reject(e);
                     } finally {
                         isRefreshing = false
