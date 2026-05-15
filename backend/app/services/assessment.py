@@ -29,7 +29,7 @@ async def create_assessment(db: Session, assessment_data: AssessmentCreate, curr
         db.refresh(assessment_instance)
         if user.is_email_notification:
             mail_message = MessageSchema(
-                subject="Your Assessment Results 🌿",
+                subject="Your Assessment Results | MindCare",
                 recipients=[user.email],
                 body=f"""
 Hi {user.name},
