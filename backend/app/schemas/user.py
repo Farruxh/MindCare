@@ -34,6 +34,7 @@ class UserForgotPassword(BaseModel):
     email: EmailStr
 
 class UserVerifyToken(BaseModel):
+    email: EmailStr
     token: str
 
 class UserResetPassword(BaseModel):

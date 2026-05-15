@@ -115,7 +115,7 @@ async def forget_password(db: Session, email: UserForgotPassword):
     db.refresh(token_instance)
 
     mail_message = MessageSchema(
-        subject="Password Reset Token",
+        subject="Password Reset Token | MindCare",
         recipients=[email],
         body=f"Your password reset token is: {token}. This token is valid for 6 minutes and will expire at {expiry_local}.",
         subtype="plain"
@@ -124,13 +124,16 @@ async def forget_password(db: Session, email: UserForgotPassword):
     await fm.send_message(mail_message)
     
 def verifyPasswordToken(db: Session, data: UserVerifyToken):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Email not found in our database")
     record = db.query(Password_Token).filter(
-        Password_Token.token == data.token
+        Password_Token.user_id == user.user_id
     ).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Invalid token")
+    if not record or record.token != data.token:
+        raise HTTPException(status_code=400, detail="Invalid token")
     elif record.expires_at < datetime.now(timezone.utc):
-        raise HTTPException(status_code=404, detail="Token has expired")
+        raise HTTPException(status_code=400, detail="Token has expired")
     
     record.is_verified = True
     db.commit()
