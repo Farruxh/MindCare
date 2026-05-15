@@ -6,6 +6,7 @@ import axios from "axios"
 import { useAlert } from "../../context/AlertContext.tsx";
 import { useState } from "react"
 import Loader from "../loader/loader.tsx"
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 interface formData {
     new_password: string
@@ -13,12 +14,13 @@ interface formData {
 }
 
 export function ResetPassword() {
-    const { register, handleSubmit } = useForm<formData>();
+    const { register, handleSubmit, formState: { errors } } = useForm<formData>();
     const { setAlert } = useAlert();
     const navigate = useNavigate()
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [loader, setLoader] = useState(false)
+    useDocumentTitle("Reset Password | MindCare")
 
     const handleOnSubmit: SubmitHandler<formData> = async (data) => {
         try {
@@ -69,7 +71,7 @@ export function ResetPassword() {
                                     minLength={8}
                                     maxLength={128}
                                     placeholder="••••••••"
-                                    {...register("new_password", { required: true, minLength: 8, maxLength: 128 })}
+                                    {...register("new_password", { required: "Enter your new password", minLength: 8, maxLength: 128 })}
                                 />
                                 <motion.button
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -80,6 +82,9 @@ export function ResetPassword() {
                                     {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </motion.button>
                             </div>
+                            {errors.new_password && (
+                                <span className="text-red-500 text-sm mt-1">{errors.new_password.message}</span>
+                            )}
                         </div>
 
                         <div>
@@ -92,7 +97,7 @@ export function ResetPassword() {
                                     minLength={8}
                                     maxLength={128}
                                     placeholder="••••••••"
-                                    {...register("confirm_new_password", { required: true, minLength: 8, maxLength: 128 })}
+                                    {...register("confirm_new_password", { required: "Enter your confirm new password", minLength: 8, maxLength: 128 })}
                                 />
                                 <motion.button
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -103,6 +108,9 @@ export function ResetPassword() {
                                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </motion.button>
                             </div>
+                            {errors.confirm_new_password && (
+                                <p className="text-red-500 text-sm mt-1">{errors.confirm_new_password.message}</p>
+                            )}
                         </div>
                         <button
                             type="submit"
