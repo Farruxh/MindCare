@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { useAlert } from "../../context/AlertContext"
 import Loader from "../loader/loader"
 import { useState } from "react"
+import useDocumentTitle from "../../hooks/useDocumentTitle"
 
 interface formData {
     email: string
@@ -16,13 +17,15 @@ export function ForgotPassword() {
     const [loader, setLoader] = useState(false)
     const navigate = useNavigate()
     const { setAlert } = useAlert()
+    useDocumentTitle("Forgot Password | MindCare")
 
-    const handleOnSubmit: SubmitHandler<formData> = async (data) => {
+    const handleSubmitEmail: SubmitHandler<formData> = async (data) => {
         try {
             setLoader(true)
             const res = await axios.post("/api/v1/users/forget-password", data)
             setAlert({ message: res.data?.message || "Password reset token sent successfully", severity: "success" })
-            navigate("/verify-token")
+            sessionStorage.setItem("otpTimer", (Date.now() + 30000).toString())
+            navigate("/verify-token" , {state: {email: data.email}})
         } catch (error: any) {
             setAlert({ message: error.response.data?.detail, severity: "error" })
         }
@@ -54,7 +57,7 @@ export function ForgotPassword() {
                     transition={{ duration: 0.5, delay: 0.1 }}
                     className="bg-card rounded-2xl shadow-lg border border-border p-8"
                 >
-                    <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-5">
+                    <form onSubmit={handleSubmit(handleSubmitEmail)} className="space-y-5">
                         <div>
                             <label className="block mb-6 text-card-foreground">Please enter your registered email for a reset token</label>
                             <div className="relative">

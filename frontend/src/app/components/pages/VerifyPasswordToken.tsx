@@ -1,13 +1,32 @@
 import { motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { useAlert } from "../../context/AlertContext";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom"
+import Loader from "../loader/loader";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export function VerifyPasswordToken() {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const { setAlert } = useAlert()
+  const location = useLocation()
   const navigate = useNavigate()
+  const [loader, setLoader] = useState(false)
+
+  const [timer, setTimer] = useState(() => {
+    const savedTime = sessionStorage.getItem("otpTimer");
+    if (!savedTime) return 0;
+    const remaining = Math.ceil((parseInt(savedTime) - Date.now()) / 1000);
+    if (remaining <= 0) {
+      sessionStorage.removeItem("otpTimer");
+      return 0;
+    }
+    return remaining;
+  })
+  const [canResend, setCanResend] = useState(false)
+
+  useDocumentTitle("Verify OTP | MindCare")
 
   const handleChange = async (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -19,12 +38,18 @@ export function VerifyPasswordToken() {
 
     const token = inputs.current.map((input) => input?.value || "").join("");
     if (token.length === 4) {
-        try {
-           const res = await axios.post("/api/v1/users/verify-password-token", {token} , { withCredentials: true }); 
-           navigate("/reset-password")
-        } catch (error: any) {
-            setAlert({message: error.response.data?.detail || "Error occured while verifying token" , severity: "error"})
-        }
+      const data = { email: location.state?.email, token }
+      try {
+        setLoader(true)
+        await axios.post("/api/v1/users/verify-password-token", data, { withCredentials: true });
+        sessionStorage.removeItem("otpTimer");
+        navigate("/reset-password")
+      } catch (error: any) {
+        setAlert({ message: error.response.data?.detail || "Error occured while verifying token", severity: "error" })
+      }
+      finally {
+        setLoader(false)
+      }
     }
   };
 
@@ -34,8 +59,39 @@ export function VerifyPasswordToken() {
     }
   };
 
+  useEffect(() => {
+    if (timer === 0) {
+      setCanResend(true)
+      return
+    }
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1)
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [timer])
+
+  const handleResendToken = async () => {
+    try {
+      setLoader(true)
+      const res = await axios.post("/api/v1/users/forget-password", { email: location.state?.email })
+      setAlert({ message: res.data?.message || "Password reset token sent successfully", severity: "success" })
+      navigate("/verify-token", { state: { email: location.state?.email } })
+    } catch (error: any) {
+      setAlert({ message: error.response.data?.detail, severity: "error" })
+    }
+    finally {
+      setLoader(false)
+      const otpTimer = Date.now() + 30000;
+      sessionStorage.setItem("otpTimer", otpTimer.toString());
+      setTimer(30);
+      setCanResend(false);
+    }
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen">
+      {loader && <Loader />}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,6 +114,13 @@ export function VerifyPasswordToken() {
             />
           ))}
         </div>
+        <button
+          disabled={!canResend}
+          className={`mt-5 text-sm ${canResend ? "text-primary hover:text-primary/80 cursor-pointer" : "text-muted-foreground"} transition-colors`}
+          onClick={() => handleResendToken()}
+        >
+          {canResend ? <div>Resend token</div> : <div>Resend token in <span className="font-medium">{timer}</span></div>}
+        </button>
       </motion.div>
     </div>
   );
