@@ -29,7 +29,11 @@ export function ChatInterface() {
   }[]>([])
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  useDocumentTitle(chat_id ? `Chat ${chat_id} | AI Assistant | MindCare` : "AI Assistant | MindCare")
+
+  const chatIndex = chats.findIndex((c) => c.chat_id === Number(chat_id));
+  const displayId = chatIndex !== -1 ? chats.length - chatIndex : chat_id;
+
+  useDocumentTitle(chat_id ? `Chat ${displayId} | AI Assistant | MindCare` : "AI Assistant | MindCare")
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,18 +53,16 @@ export function ChatInterface() {
   }, [messages]);
 
   useEffect(() => {
-    if (isSideBarOpen) {
-      const fetchChatHistory = async () => {
-        try {
-          const res = await axios.get("/api/v1/chats/all", { withCredentials: true })
-          setChats(res.data?.data)
-        } catch (error: any) {
-          console.log(error.response?.data?.detail);
-        }
+    const fetchChatHistory = async () => {
+      try {
+        const res = await axios.get("/api/v1/chats/all", { withCredentials: true })
+        setChats(res.data?.data || [])
+      } catch (error: any) {
+        console.log(error.response?.data?.detail);
       }
-      fetchChatHistory()
     }
-  }, [isSideBarOpen])
+    fetchChatHistory()
+  }, [chat_id])
 
   const handleCreateNewChat = async () => {
     try {
@@ -90,7 +92,10 @@ export function ChatInterface() {
     try {
       await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
-
+      if (Number(chat_id) === Number(chat_id)) {
+        setMessages([])
+        navigate("/assistant")
+      }
     } catch (error: any) {
       console.log(error.response?.data?.detail);
     }
@@ -269,7 +274,7 @@ export function ChatInterface() {
                     : "bg-card border border-border text-card-foreground"
                     }`}
                 >
-                  <p className="leading-relaxed">{message.message_text}</p>
+                  <p className="leading-relaxed whitespace-pre-wrap">{message.message_text}</p>
                 </div>
                 {message.role === "user" && (
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
@@ -322,13 +327,20 @@ export function ChatInterface() {
         className="bg-card backdrop-blur-sm border-t border-border px-6 py-4"
       >
         <div className="max-w-4xl mx-auto flex gap-3">
-          <input
-            type="text"
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyUp={(e) => (e.key === "Enter" && !isTyping) && handleSendChat()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (!isTyping) {
+                  handleSendChat();
+                }
+              }
+            }}
+            rows={1}
             placeholder={messages.length > 0 ? "Reply..." : "Share what's on your mind"}
-            className="flex-1 px-5 py-3 bg-input-background rounded-2xl border border-border text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+            className="flex-1 px-5 py-3 bg-input-background rounded-2xl border border-border text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none overflow-y-auto"
           />
           <button
             onClick={() => handleSendChat()}

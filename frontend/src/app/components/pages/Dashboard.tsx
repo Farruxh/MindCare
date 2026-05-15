@@ -38,7 +38,7 @@ export function Dashboard() {
   const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }))
   const [recentActivity, setRecentActivity] = useState<{
     type: string;
-    created_at: Date;
+    created_at: string;
   }[]>([])
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function Dashboard() {
         const res = await axios.get("/api/v1/users/recent-activity/get", { withCredentials: true })
         const formattedActivities = res.data.data.map((activity: any) => ({
           type: activity.activity_type,
-          created_at: new Date(activity.created_at)
+          created_at: activity.created_at
         }));
         setRecentActivity(formattedActivities);
       } catch (error: any) {
@@ -79,6 +79,21 @@ export function Dashboard() {
     stress: row.stress_score ?? 0,
     stress_severity: row.stress_severity ?? "None"
   }));
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString("en-US", { 
+      year: "numeric", 
+      month: "short", 
+      day: "numeric" 
+    })
+    const formattedTime = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+    return `${formattedDate} at ${formattedTime}`;
+  };
 
   const handleLogout = async () => {
     try {
@@ -197,8 +212,8 @@ export function Dashboard() {
                     <YAxis stroke="#6c757d" />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#ffffff",
-                        border: "1px solid #e8eaed",
+                        backgroundColor: "var(--background)",
+                        border: "1px solid var(--border)",
                         borderRadius: "12px",
                         padding: "12px"
                     }}
@@ -247,8 +262,8 @@ export function Dashboard() {
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity, index) => (
                   <div key={index} className="p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
-                    <div className="text-sm text-muted-foreground mb-1">{activity.created_at.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</div>
-                    <div className="text-foreground mb-1">{activity.type}</div>
+                    <div className="text-sm text-muted-foreground mb-1">{formatDate(activity?.created_at)}</div>
+                    <div className="text-foreground mb-1">{activity?.type}</div>
                   </div>
                 ))
               ) : (
