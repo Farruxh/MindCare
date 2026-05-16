@@ -15,7 +15,7 @@ interface accountFormData {
   email: string
 }
 
-interface formData {
+interface passwordFormData {
   currentPassword: string,
   newPassword: string,
   confirmPassword: string
@@ -39,7 +39,7 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const { setAlert } = useAlert();
   const { register: register1, handleSubmit: handleSubmit1, trigger: trigger1 } = useForm<accountFormData>()
-  const { register: register, handleSubmit: handleSubmit, trigger: trigger } = useForm<formData>()
+  const { register: register, handleSubmit: handleSubmit, trigger: trigger, formState: { errors } } = useForm<passwordFormData>()
   const [isDarkMode, setIsDarkMode] = useState<"light" | "dark">("light")
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -104,7 +104,7 @@ export function ProfilePage() {
     }
   }
 
-  const handleUpdatePassword: SubmitHandler<formData> = async (data) => {
+  const handleUpdatePassword: SubmitHandler<passwordFormData> = async (data) => {
     try {
       setLoader(true)
       const res = await axios.patch("/api/v1/users/update-current-password", data, { withCredentials: true })
@@ -318,7 +318,7 @@ export function ProfilePage() {
                   <input
                     type={showCurrentPassword ? "text" : "password"}
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
-                    {...register("currentPassword", { required: true })}
+                    {...register("currentPassword", { required: "Enter your current password" })}
                   />
                   <motion.button
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -329,6 +329,9 @@ export function ProfilePage() {
                     {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </motion.button>
                 </div>
+                {errors.currentPassword && (
+                    <p className="text-red-500 text-sm mt-1">{errors.currentPassword.message}</p>
+                  )}
               </div>
               <div>
                 <label className="block mb-2 text-card-foreground">New Password</label>
@@ -339,7 +342,7 @@ export function ProfilePage() {
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     minLength={8}
                     maxLength={128}
-                    {...register("newPassword", { required: true, minLength: 8, maxLength: 128 })}
+                    {...register("newPassword", { required: "Enter your new password", minLength: 8, maxLength: 128 })}
                   />
                   <motion.button
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -350,6 +353,9 @@ export function ProfilePage() {
                     {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </motion.button>
                 </div>
+                {errors.newPassword && (
+                    <p className="text-red-500 text-sm mt-1">{errors.newPassword.message}</p>
+                  )}
               </div>
               <div>
                 <label className="block mb-2 text-card-foreground">Confirm New Password</label>
@@ -360,7 +366,7 @@ export function ProfilePage() {
                     className="w-full pl-11 pr-4 py-3 bg-input-background rounded-xl border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
                     minLength={8}
                     maxLength={128}
-                    {...register("confirmPassword", { required: true, minLength: 8, maxLength: 128 })}
+                    {...register("confirmPassword", { required: "Enter your confirm new password", minLength: 8, maxLength: 128 })}
                   />
                   <motion.button
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
@@ -371,6 +377,9 @@ export function ProfilePage() {
                     {showConfirmNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </motion.button>
                 </div>
+                {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>
+                  )}
               </div>
               <button
                 type="button"
