@@ -17,7 +17,7 @@ interface formData {
 }
 
 export function SignUpPage() {
-  const { register, handleSubmit, formState: { errors }  } = useForm<formData>();
+  const { register, handleSubmit, formState: { errors } } = useForm<formData>();
   const { setAlert } = useAlert();
   const navigate = useNavigate()
   const [loader, setLoader] = useState(false);
@@ -29,7 +29,7 @@ export function SignUpPage() {
       setLoader(true);
       const res = await axios.post("/api/v1/users/register-user", data);
       setAlert({ message: res.data.message || "Account Successfully Created.", severity: "success" })
-      navigate("/login"); 
+      navigate("/login");
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred during signup.", severity: "error" })
     } finally {
@@ -61,7 +61,7 @@ export function SignUpPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="bg-card rounded-2xl shadow-lg border border-border p-8"
-        > 
+        >
           <form onSubmit={handleSubmit(handleOnSubmit)} className="space-y-4">
             <div>
               <label className="block mb-2 text-card-foreground">Full Name</label>
@@ -73,10 +73,10 @@ export function SignUpPage() {
                   placeholder="John Doe"
                   {...register("name", { required: "Name is required" })}
                 />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-                )}
               </div>
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
@@ -89,10 +89,10 @@ export function SignUpPage() {
                   placeholder="your.email@example.com"
                   {...register("email", { required: "Email is required" })}
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-                )}
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              )}
             </div>
 
             <div>
@@ -107,18 +107,18 @@ export function SignUpPage() {
                   placeholder="••••••••••"
                   {...register("password", { required: "Password is required" })}
                 />
-                 {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-                  )} 
-                <motion.button 
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
-                  type="button" 
+                <motion.button
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
+                  type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   whileTap={{ scale: 0.9 }}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </motion.button>
-              </div> 
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+              )}
             </div>
 
             <div>
@@ -143,10 +143,10 @@ export function SignUpPage() {
                 </label>
               </div>
               {errors.gender && (
-                    <p className="text-red-500 text-sm text-center mt-1">
-                      Please select gender
-                    </p>
-                  )}
+                <p className="text-red-500 text-sm text-center mt-1">
+                  Please select gender
+                </p>
+              )}
             </div>
 
             <button

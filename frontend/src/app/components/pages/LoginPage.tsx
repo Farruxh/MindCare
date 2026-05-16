@@ -72,10 +72,11 @@ export function LoginPage() {
                   placeholder="your.email@example.com"
                   {...register("email", { required: "Email is required" })}
                 />
-                {errors.email && (
+                
+              </div>
+              {errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                 )}
-              </div>
             </div>
 
             <div>
@@ -88,9 +89,7 @@ export function LoginPage() {
                   placeholder="••••••••"
                   {...register("password", { required: "Password is required" })}
                 />
-                {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
-                  )}
+                
                 <motion.button 
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none" 
                   type="button" 
@@ -99,7 +98,11 @@ export function LoginPage() {
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </motion.button> 
+                
               </div>
+              {errors.password && (
+                    <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                  )}
             </div>
 
             <div className="flex items-center justify-center text-sm">
