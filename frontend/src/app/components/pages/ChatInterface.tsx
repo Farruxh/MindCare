@@ -6,6 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
+import Loader from "../loader/Loader";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -19,6 +20,7 @@ export function ChatInterface() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { setAlert } = useAlert()
+  const [loader, setLoader] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -66,11 +68,14 @@ export function ChatInterface() {
 
   const handleCreateNewChat = async () => {
     try {
+      setLoader(true)
       const res = await axios.post("/api/v1/chats/", { withCredentials: true })
       const chat_id = res.data?.data.chat_id
       navigate(`/assistant/${chat_id}`)
     } catch (error: any) {
       console.log(error.response?.data?.detail);
+    } finally {
+      setLoader(false)
     }
   }
 
@@ -90,6 +95,7 @@ export function ChatInterface() {
 
   const handleDeleteChat = async (chat_id: number) => {
     try {
+      setLoader(true)
       await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
       if (Number(chat_id) === Number(chat_id)) {
@@ -98,6 +104,8 @@ export function ChatInterface() {
       }
     } catch (error: any) {
       console.log(error.response?.data?.detail);
+    } finally {
+      setLoader(false)
     }
   }
 
@@ -152,6 +160,7 @@ export function ChatInterface() {
       transition={{ duration: 0.3 }}
       className="h-screen background flex flex-col"
     >
+      {loader && <Loader />}
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
