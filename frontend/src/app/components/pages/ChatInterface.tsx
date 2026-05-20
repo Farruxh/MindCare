@@ -14,6 +14,18 @@ interface Message {
   role: string
   message_text: string
 }
+//Abdullah work antigravity
+interface ChatResponse {
+  reply: string
+  polarity_score: number
+  polarity_label: string
+}
+
+//Abdullah work antigravity
+interface PolaritySnapshot {
+  score: number;
+  label: string;
+}
 
 export function ChatInterface() {
   const { chat_id } = useParams()
@@ -29,6 +41,10 @@ export function ChatInterface() {
     user_id: number
     created_at: string
   }[]>([])
+
+  //Abdullah work 
+  const [polarity, setPolarity] = useState<PolaritySnapshot | null>(null);
+
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +70,21 @@ export function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
+  //Abdullah work 
+  useEffect(() => {
+    const fetchPolarity = async () => {
+      try {
+        const res = await axios.get("/api/v1/mental_health/snapshot", { withCredentials: true });
+        if (res.data?.data) {
+          setPolarity(res.data.data);
+        }
+      } catch (error) {
+        // Silently ignore if no snapshot exists
+      }
+    };
+    fetchPolarity();
+  }, []);
+//----------------------------------------------
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
@@ -130,14 +161,14 @@ export function ChatInterface() {
     try {
       let res
       if (!chat_id) {
-      const [chatRes] = await Promise.all([ 
-        axios.post("/api/v1/chats/", {}, { withCredentials: true }),
-        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
-      ])
-      const chat_id = chatRes.data?.data.chat_id
-      res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
-      navigate(`/assistant/${chat_id}`)
-      } 
+        const [chatRes] = await Promise.all([
+          axios.post("/api/v1/chats/", {}, { withCredentials: true }),
+          axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
+        ])
+        const chat_id = chatRes.data?.data.chat_id
+        res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+        navigate(`/assistant/${chat_id}`)
+      }
       else {
         res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
       }
@@ -180,7 +211,12 @@ export function ChatInterface() {
           </div>
           <div>
             <h2 className="text-foreground">AI Assistant</h2>
-            {/* <p className="text-sm text-muted-foreground">Always here to listen</p> */}
+            {/* Abdullah work antigravity */}
+            {polarity && (
+              <p className="text-xs font-medium px-2 py-0.5 mt-1 rounded-full bg-primary/10 text-primary inline-block">
+                Current Mood: {polarity.label} ({Math.round(polarity.score)}%)
+              </p>
+            )}
           </div>
         </div>
         <button

@@ -22,40 +22,60 @@ interface SentimentAnalysis {
   severityLevel: "minimal" | "mild" | "moderate" | "severe";
   recommendations: string[];
 }
+//Abdullah work 
+interface WeeklyReportResponse {
+  weekly_polarity: number;
+  polarity_label: string;
+  dominant_state: string;
+  trend: string;
+  state_counts: Record<string, number>;
+  entry_count: number;
+}
 
 export function WeeklyReport() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [analysis, setAnalysis] = useState<SentimentAnalysis | null>(null);
+  //Abdullah work 
+  const [analysis, setAnalysis] = useState<WeeklyReportResponse | null>(null);
   const { setAlert } = useAlert();
   const navigate = useNavigate();
   useDocumentTitle("Weekly Wellness Report | MindCare");
 
   useEffect(() => {
-    const fetchWeeklyEntries = async() => {
+    const fetchWeeklyData = async () => {
       try {
-        const response = await axios.get("/api/v1/journal/weekly" , {withCredentials: true});
-        console.log("Weekly entries fetched:", response.data.data[0].created_at);
-        setEntries(response.data.data ?? []);
+        const [entriesRes, reportRes] = await Promise.all([
+          axios.get("/api/v1/journal/weekly", { withCredentials: true }),
+          axios.get("/api/v1/mental_health/latest-report", { withCredentials: true })
+        ]);
+
+        if (entriesRes.data?.data) {
+          setEntries(entriesRes.data.data);
+        }
+
+        //Abdullah work 
+        if (reportRes.data?.data) {
+          setAnalysis(reportRes.data.data);
+        }
       } catch (error: any) {
-        setAlert({ message: error.response?.data?.detail || "Failed to fetch weekly entries.", severity: "error" });
-        console.error("Error fetching weekly entries:", error);
+        setAlert({ message: error.response?.data?.detail || "Failed to fetch weekly data.", severity: "error" });
+        console.error("Error fetching weekly data:", error);
       }
     };
-    fetchWeeklyEntries();
-  } , [])
+    fetchWeeklyData();
+  }, [])
 
   // useEffect(() => {
   //   const savedEntries = localStorage.getItem("journalEntries");
   //   if (savedEntries) {
   //     const allEntries: JournalEntry[] = JSON.parse(savedEntries);
-      
+
   //     // Get last 7 entries
   //     const recentEntries = allEntries
   //       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   //       .slice(0, 7);
-      
+
   //     setEntries(recentEntries);
-      
+
   //     // Perform sentiment analysis
   //     const sentimentResult = analyzeSentiment(recentEntries);
   //     setAnalysis(sentimentResult);
@@ -145,7 +165,7 @@ export function WeeklyReport() {
   //   const avgMood = moodScores.length > 0 ? moodScores.reduce((a, b) => a + b, 0) / moodScores.length : 3;
 
   //   let severityLevel: "minimal" | "mild" | "moderate" | "severe" = "minimal";
-    
+
   //   if (ratio > 3 || avgMood < 2 || (anxietyCount > 10 && stressCount > 10)) {
   //     severityLevel = "severe";
   //   } else if (ratio > 2 || avgMood < 2.5 || (anxietyCount > 6 || stressCount > 6)) {
@@ -156,7 +176,7 @@ export function WeeklyReport() {
 
   //   // Generate recommendations
   //   const recommendations: string[] = [];
-    
+
   //   if (anxietyCount > 5) {
   //     recommendations.push("Practice deep breathing exercises and mindfulness meditation");
   //   }
@@ -198,7 +218,30 @@ export function WeeklyReport() {
   //   }
   // };
 
-  const isSevere = analysis?.severityLevel === "severe";
+  //Abdullah work 
+  const isSevere = analysis?.polarity_label === "At Risk";
+
+  if (!analysis) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Analyzing your journal entries with ML...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getSeverityColor = (label: string) => {
+    switch (label) {
+      case "Healthy": return { bg: "bg-chart-3/10", text: "text-chart-3", border: "border-chart-3/20" };
+      case "Moderate": return { bg: "bg-chart-1/10", text: "text-chart-1", border: "border-chart-1/20" };
+      case "At Risk": return { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" };
+      default: return { bg: "bg-muted", text: "text-foreground", border: "border-border" };
+    }
+  };
+
+  const severityColors = getSeverityColor(analysis.polarity_label);
 
   // if (!analysis) {
   //   return (
@@ -215,11 +258,11 @@ export function WeeklyReport() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString("en-US", { 
+    const formattedDate = date.toLocaleDateString("en-US", {
       // weekday: "short", 
-      year: "numeric", 
-      month: "short", 
-      day: "numeric" 
+      year: "numeric",
+      month: "short",
+      day: "numeric"
     })
     return formattedDate;
   };
@@ -259,25 +302,24 @@ export function WeeklyReport() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          // className={`${severityColors.bg} border ${severityColors.border} rounded-2xl p-8 mb-6`}
+          className={`${severityColors.bg} border ${severityColors.border} rounded-2xl p-8 mb-6`}
         >
           <div className="flex items-center justify-between mb-4">
-            {/* <h2 className={`text-2xl ${severityColors.text}`}> */}
-              {/* Overall Status: {analysis.severityLevel.charAt(0).toUpperCase() + analysis.severityLevel.slice(1)} */}
-            {/* </h2> */}
-            {/* {analysis.moodTrend === "improving" ? ( */}
-              {/* <TrendingUp className={`w-8 h-8 ${severityColors.text}`} /> */}
-            {/* ) : analysis.moodTrend === "declining" ? ( */}
-              {/* <TrendingDown className={`w-8 h-8 ${severityColors.text}`} /> */}
-            {/* ) : ( */}
-              {/* <div className={`w-8 h-8 rounded-full border-2 ${severityColors.text}`} /> */}
-            {/* )} */}
+            <h2 className={`text-2xl ${severityColors.text}`}>
+              Overall Status: {analysis.polarity_label} (Score: {Math.round(analysis.weekly_polarity)})
+            </h2>
+            {analysis.trend === "Improving" ? (
+              <TrendingUp className={`w-8 h-8 ${severityColors.text}`} />
+            ) : analysis.trend === "Declining" ? (
+              <TrendingDown className={`w-8 h-8 ${severityColors.text}`} />
+            ) : (
+              <div className={`w-8 h-8 rounded-full border-2 ${severityColors.text}`} />
+            )}
           </div>
-          {/* <p className="text-muted-foreground">
-            Your mood is {analysis.moodTrend === "improving" ? "showing positive improvement" : 
-                          analysis.moodTrend === "declining" ? "showing some decline" : 
-                          "remaining stable"} over the past week.
-          </p> */}
+          <p className="text-muted-foreground">
+            Your mood is {analysis.trend.toLowerCase()} over the past week.
+            Dominant state detected: <strong>{analysis.dominant_state}</strong>
+          </p>
         </motion.div>
 
         {/* Sentiment Metrics */}
@@ -293,11 +335,11 @@ export function WeeklyReport() {
               <div className="p-3 bg-chart-3/20 rounded-xl">
                 <TrendingUp className="w-6 h-6 text-chart-3" />
               </div>
-              <h3 className="text-foreground">Positive Indicators</h3>
+              <h3 className="text-foreground">Healthy Entries</h3>
             </div>
-            {/* <div className="text-3xl text-chart-3 mb-2">{analysis.positiveCount}</div> */}
+            <div className="text-3xl text-chart-3 mb-2">{analysis.state_counts?.["Normal"] || 0}</div>
             <p className="text-sm text-muted-foreground">
-              Mentions of positive emotions and experiences
+              Mentions of positive emotions and normal state
             </p>
           </div>
 
@@ -307,11 +349,11 @@ export function WeeklyReport() {
               <div className="p-3 bg-primary/20 rounded-xl">
                 <TrendingDown className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-foreground">Challenging Moments</h3>
+              <h3 className="text-foreground">Depressive Signals</h3>
             </div>
-            {/* <div className="text-3xl text-primary mb-2">{analysis.negativeCount}</div> */}
+            <div className="text-3xl text-primary mb-2">{analysis.state_counts?.["Depression"] || 0}</div>
             <p className="text-sm text-muted-foreground">
-              Mentions of difficult emotions
+              Entries exhibiting signs of depression
             </p>
           </div>
 
@@ -323,7 +365,7 @@ export function WeeklyReport() {
               </div>
               <h3 className="text-foreground">Anxiety Signals</h3>
             </div>
-            {/* <div className="text-3xl text-chart-2 mb-2">{analysis.anxietyIndicators}</div> */}
+            <div className="text-3xl text-chart-2 mb-2">{analysis.state_counts?.["Anxiety"] || 0}</div>
             <p className="text-sm text-muted-foreground">
               References to anxiety or worry
             </p>
@@ -337,7 +379,7 @@ export function WeeklyReport() {
               </div>
               <h3 className="text-foreground">Stress Markers</h3>
             </div>
-            {/* <div className="text-3xl text-chart-1 mb-2">{analysis.stressIndicators}</div> */}
+            <div className="text-3xl text-chart-1 mb-2">{analysis.state_counts?.["Stress"] || 0}</div>
             <p className="text-sm text-muted-foreground">
               Mentions of stress or feeling overwhelmed
             </p>
@@ -354,7 +396,7 @@ export function WeeklyReport() {
           <h3 className="mb-4 text-foreground">Personalized Recommendations</h3>
           <div className="space-y-3">
             {/* {analysis.recommendations.map((rec, index) => ( */}
-              {/* <motion.div
+            {/* <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -389,11 +431,10 @@ export function WeeklyReport() {
             <button
               onClick={isSevere ? () => navigate("/clinics") : undefined}
               disabled={!isSevere}
-              className={`flex items-center justify-center gap-2 py-4 rounded-xl transition-all duration-300 ${
-                isSevere
-                  ? "bg-secondary text-secondary-foreground hover:bg-secondary/90 cursor-pointer"
-                  : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
-              }`}
+              className={`flex items-center justify-center gap-2 py-4 rounded-xl transition-all duration-300 ${isSevere
+                ? "bg-secondary text-secondary-foreground hover:bg-secondary/90 cursor-pointer"
+                : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
+                }`}
             >
               <MapPin className="w-5 h-5" />
               Find Clinic
