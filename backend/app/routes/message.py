@@ -7,6 +7,7 @@ from app.schemas.message import MessageResponse, MessageCreate
 from app.services.assessment import get_last_assessment
 from app.services.message import save_message, get_chat_history_for_gemini, get_chat_messages,delete_message
 from app.services.gemini import ask_gemini
+from app.services.mental_health import get_polarity_snapshot
 
 router = APIRouter(prefix="/api/v1/messages" , tags= ["Messages"])
 
@@ -18,8 +19,9 @@ def new_message(chat_id: int, payload: MessageCreate, db: Session = Depends(get_
     chatHistory = get_chat_history_for_gemini(db, chat_id)
 
     last_assessment = get_last_assessment(db, current_user)
+    snapshot = get_polarity_snapshot(db, current_user)
 
-    gemini_response = ask_gemini(chatHistory, last_assessment)
+    gemini_response = ask_gemini(chatHistory, last_assessment, snapshot)
 
     ai_message = save_message(db, chat_id, MessageCreate(
         role="model",
