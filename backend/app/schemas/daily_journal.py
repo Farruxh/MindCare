@@ -7,7 +7,7 @@ class DailyJournalBase(BaseModel):
     polarity_score: Optional[int] = None
 
 class DailyJournalCreate(DailyJournalBase):
-    pass
+    created_at: Optional[datetime] = None
 
 class DailyJournalResponse(DailyJournalBase):
     journal_id: int
