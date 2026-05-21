@@ -22,3 +22,5 @@ class User(Base):
     PasswordResetToken = relationship("Password_Token", cascade="all, delete-orphan")
     RecentActivity = relationship("RecentActivity", cascade="all, delete-orphan")
     DailyJournal = relationship("DailyJournal", cascade="all, delete-orphan")
+    WeeklyReports = relationship("WeeklyReport", cascade="all, delete-orphan")
+    PolaritySnapshots = relationship("PolaritySnapshot", cascade="all, delete-orphan")
