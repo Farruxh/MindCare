@@ -28,6 +28,7 @@ from app.models.recent_activity import Base
 from app.models.clinic import Base
 from app.models.assessment import Base
 from app.models.pass_token import Base
+from app.models.mental_health import Base
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
