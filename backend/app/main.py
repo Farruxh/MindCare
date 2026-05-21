@@ -10,12 +10,22 @@ from app.models.message import Message
 from app.models.clinic import Clinic
 from app.models.pass_token import Password_Token
 from app.models.daily_journal import DailyJournal
+from app.models.mental_health import WeeklyReport, PolaritySnapshot
 from app.settings import settings
+from app.services.inference import init_model
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load model on startup
+    init_model()
+    yield
+    # Cleanup on shutdown (if any)
 
 
 Base.metadata.create_all(bind = engine)
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +42,7 @@ from app.routes import chat_history
 from app.routes import message
 from app.routes import clinic
 from app.routes import daily_journal
+from app.routes import mental_health
 
 app.include_router(user.router)
 app.include_router(assessment.router)
@@ -39,6 +50,7 @@ app.include_router(chat_history.router)
 app.include_router(message.router)
 app.include_router(clinic.router)
 app.include_router(daily_journal.router)
+app.include_router(mental_health.router)
 
 
 @app.exception_handler(HTTPException)

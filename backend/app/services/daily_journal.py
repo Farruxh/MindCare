@@ -11,6 +11,8 @@ def create_journal_entry(db: Session, user_id: int, journal_data: DailyJournalCr
         user_id=user_id, 
         content=journal_data.content
     )
+    if journal_data.created_at:
+        new_entry.created_at = journal_data.created_at
     db.add(new_entry)
     db.commit()
     db.refresh(new_entry)

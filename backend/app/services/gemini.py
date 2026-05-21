@@ -1,7 +1,7 @@
 from google import genai
 from app.settings import settings
 
-def ask_gemini(chatHistory: list, assessment) -> str:
+def ask_gemini(chatHistory: list, assessment, snapshot=None) -> str:
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     if assessment:
@@ -20,9 +20,33 @@ def ask_gemini(chatHistory: list, assessment) -> str:
         for their self-awareness and overall wellbeing.
         """
 
+    if snapshot:
+        label = snapshot.label
+        if label == "Healthy":
+            snapshot_rules = "Be warm, positive, and reinforcing about their current state."
+        elif label == "Moderate":
+            snapshot_rules = "Be gently supportive, check in on how they are feeling, and encourage them to take care of themselves."
+        elif label == "At Risk":
+            snapshot_rules = "Be calm, empathetic, and softly suggest speaking to someone trusted or a professional."
+        else:
+            snapshot_rules = "Be warm, neutral, and supportive."
+    else:
+        snapshot_rules = "Be warm, neutral, and supportive. The user has no recent journal data yet."
+
+    tone_instructions = f"""
+    TONE ADJUSTMENT RULES:
+    - Based on recent analysis: {snapshot_rules}
+    - NEVER use clinical words like 'Depression', 'Anxiety disorder', 'Moderate', 'Healthy', or 'At Risk' directly to describe them.
+    - NEVER tell the user you are reading their diary, looking at their score, or running analysis on them. Be invisible.
+    - Be conversational, not clinical. Keep responses natural and fluid.
+    - Keep responses strictly 2 to 4 sentences unless the user clearly asks for a longer explanation.
+    """
+
     system_prompt = f"""
     You are a supportive mental health companion — not a licensed therapist or medical professional.
     Your role is to listen, encourage, and provide general emotional support only.
+
+    {tone_instructions}
 
     Important boundaries:
     - Do NOT diagnose any mental health condition
@@ -43,8 +67,6 @@ def ask_gemini(chatHistory: list, assessment) -> str:
     - Match their tone naturally. Only switch languages when the user does.
 
     Response style:
-    - Keep responses short and concise
-    - No long paragraphs — 3 to 5 sentences max
     - Be warm, simple and easy to understand
     - For general conversation, small talk, or non-mental-health questions — respond naturally and warmly like a normal conversational AI. Do not force every conversation toward the app or clinics.
     - Get straight to the point
