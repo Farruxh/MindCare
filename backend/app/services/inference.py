@@ -88,9 +88,9 @@ def weekly_report(entries: List[str]) -> Dict[str, Any]:
         
     avg_polarity = total_polarity / len(entries) if entries else 0.0
     
-    if avg_polarity >= 65:
+    if avg_polarity >= 70:
         polarity_label = "Healthy"
-    elif avg_polarity >= 40:
+    elif avg_polarity >= 50:
         polarity_label = "Moderate"
     else:
         polarity_label = "At Risk"
