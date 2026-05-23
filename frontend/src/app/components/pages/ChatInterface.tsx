@@ -27,13 +27,24 @@ interface PolaritySnapshot {
   label: string;
 }
 
+interface PolaritySnapshot {
+  score: number;
+  label: string;
+}
+
+const getWelcomeMessage = (name?: string): Message => ({
+  role: "model",
+  message_text: `Hello ${name || "there"}! I'm your AI mental health assistant. I'm here to listen and support you. How can I help you today?`
+});
+
 export function ChatInterface() {
   const { chat_id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { setAlert } = useAlert()
   const [loader, setLoader] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
+  const welcomeMessage = getWelcomeMessage(user?.name);
+  const [messages, setMessages] = useState<Message[]>([welcomeMessage])
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [chats, setChats] = useState<{
@@ -41,13 +52,9 @@ export function ChatInterface() {
     user_id: number
     created_at: string
   }[]>([])
-
-  //Abdullah work 
   const [polarity, setPolarity] = useState<PolaritySnapshot | null>(null);
-
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const chatIndex = chats.findIndex((c) => c.chat_id === Number(chat_id));
   const displayId = chatIndex !== -1 ? chats.length - chatIndex : chat_id;
 
@@ -70,7 +77,6 @@ export function ChatInterface() {
     scrollToBottom();
   }, [messages]);
 
-  //Abdullah work 
   useEffect(() => {
     const fetchPolarity = async () => {
       try {
@@ -79,12 +85,12 @@ export function ChatInterface() {
           setPolarity(res.data.data);
         }
       } catch (error) {
-        // Silently ignore if no snapshot exists
+        setPolarity(null);
       }
     };
     fetchPolarity();
   }, []);
-//----------------------------------------------
+
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
@@ -100,8 +106,11 @@ export function ChatInterface() {
   const handleCreateNewChat = async () => {
     try {
       setLoader(true)
-      const res = await axios.post("/api/v1/chats/", { withCredentials: true })
-      const chat_id = res.data?.data.chat_id
+      const [chatRes] = await Promise.all([
+        axios.post("/api/v1/chats/", {}, { withCredentials: true }),
+        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
+      ])
+      const chat_id = chatRes.data?.data.chat_id
       navigate(`/assistant/${chat_id}`)
     } catch (error: any) {
       console.log(error.response?.data?.detail);
@@ -115,12 +124,14 @@ export function ChatInterface() {
       const fetchMessages = async () => {
         try {
           const res = await axios.get(`/api/v1/messages/${chat_id}/get`, { withCredentials: true })
-          setMessages(res.data?.data)
+          setMessages([welcomeMessage, ...(res.data?.data || [])])
         } catch (error: any) {
-          console.log(error.response?.data?.detail)
+          setMessages([welcomeMessage])
         }
       }
       fetchMessages()
+    } else {
+      setMessages([welcomeMessage])
     }
   }, [chat_id])
 
@@ -130,7 +141,7 @@ export function ChatInterface() {
       await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
       if (Number(chat_id) === Number(chat_id)) {
-        setMessages([])
+        setMessages([welcomeMessage])
         navigate("/assistant")
       }
     } catch (error: any) {
@@ -211,7 +222,6 @@ export function ChatInterface() {
           </div>
           <div>
             <h2 className="text-foreground">AI Assistant</h2>
-            {/* Abdullah work antigravity */}
             {polarity && (
               <p className="text-xs font-medium px-2 py-0.5 mt-1 rounded-full bg-primary/10 text-primary inline-block">
                 Current Mood: {polarity.label} ({Math.round(polarity.score)}%)
@@ -291,13 +301,6 @@ export function ChatInterface() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-8 space-y-4 flex flex-col">
-        {messages.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-center">
-            <h2 className="text-xl md:text-2xl font-medium text-muted-foreground/80">
-              Hey {user?.name}, how can I assist you today
-            </h2>
-          </div>
-        ) : (
           <AnimatePresence>
             {messages.map((message, index) => (
               <motion.div
@@ -329,7 +332,6 @@ export function ChatInterface() {
               </motion.div>
             ))}
           </AnimatePresence>
-        )}
 
         {/* Typing Indicator */}
         {isTyping && (
