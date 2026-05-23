@@ -14,18 +14,6 @@ interface Message {
   role: string
   message_text: string
 }
-//Abdullah work antigravity
-interface ChatResponse {
-  reply: string
-  polarity_score: number
-  polarity_label: string
-}
-
-//Abdullah work antigravity
-interface PolaritySnapshot {
-  score: number;
-  label: string;
-}
 
 interface PolaritySnapshot {
   score: number;
