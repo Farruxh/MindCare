@@ -2,9 +2,13 @@ import { motion } from "motion/react";
 import { Brain, MessageCircle, ClipboardList, MapPin, Sparkles, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { useAuth } from "../../context/AuthContext";
+import Loader from "../loader/loader";
+import { useEffect } from "react";
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
   useDocumentTitle("MindCare")
   
   const fadeInUp = {
@@ -35,6 +39,15 @@ export function LandingPage() {
       description: "Discover mental health professionals near you",
     }
   ];
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate("/dashboard");
+    }
+
+  }, [user, isLoading])
+
+  if (isLoading) return <Loader />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100">
