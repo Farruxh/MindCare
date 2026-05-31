@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, BookOpen, Calendar, TrendingUp } from "lucide-react";
+import { ArrowLeft, BookOpen, Calendar, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import { useAlert } from "../../context/AlertContext";
@@ -13,13 +13,14 @@ interface JournalEntry {
 }
 
 export function DailyJournal() {
+  useDocumentTitle("Daily Journal | MindCare");
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [currentEntry, setCurrentEntry] = useState("");
   const [viewMode, setViewMode] = useState<"write" | "history">("write");
   const [loader, setLoader] = useState(false);
-  const navigate = useNavigate()
-  const { setAlert } = useAlert()
-  useDocumentTitle("Daily Journal | MindCare");
+  const navigate = useNavigate();
+  const { setAlert } = useAlert();
+  const [seeAll, setSeeAll] = useState(false);
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -42,19 +43,19 @@ export function DailyJournal() {
     try {
       setLoader(true);
       const [res] = await Promise.all([
-        axios.post("/api/v1/journal/create", { 
-          content: currentEntry 
+        axios.post("/api/v1/journal/create", {
+          content: currentEntry
         }, { withCredentials: true }),
         axios.post("/api/v1/users/recent-activity/create", { activity_type: "Created a journal entry" }, { withCredentials: true })
       ]);
-      
+
       setAlert({ message: res.data?.message || "Entry saved successfully!", severity: "success" });
       setCurrentEntry("");
 
       // Refresh entries list to show the new/appended entry in history
       const entriesRes = await axios.get("/api/v1/journal/all", { withCredentials: true });
       setEntries(entriesRes.data.data ?? []);
-      
+
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "Failed to save entry.", severity: "error" });
     } finally {
@@ -64,11 +65,11 @@ export function DailyJournal() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString("en-US", { 
-      weekday: "short", 
-      year: "numeric", 
-      month: "short", 
-      day: "numeric" 
+    const formattedDate = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      year: "numeric",
+      month: "short",
+      day: "numeric"
     });
     const formattedTime = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -83,16 +84,16 @@ export function DailyJournal() {
       {loader && <Loader />}
       {/* Header */}
       <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Dashboard
-            </button>
-          </div>
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Dashboard
+          </button>
         </div>
+      </div>
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* View Toggle & Weekly Report Button */}
@@ -100,21 +101,19 @@ export function DailyJournal() {
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               onClick={() => setViewMode("write")}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${
-                viewMode === "write"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
-              }`}
+              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${viewMode === "write"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                }`}
             >
               How Was My Day
             </button>
             <button
               onClick={() => setViewMode("history")}
-              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${
-                viewMode === "history"
+              className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${viewMode === "history"
                   ? "bg-primary text-primary-foreground"
                   : "bg-card border border-border text-muted-foreground hover:text-foreground"
-              }`}
+                }`}
             >
               History ({entries.length})
             </button>
@@ -122,9 +121,8 @@ export function DailyJournal() {
 
           <button
             onClick={() => navigate("/weekly-report")}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 w-full sm:w-auto ${
-                "bg-secondary text-secondary-foreground hover:bg-secondary/90 cursor-pointer"
-            }`}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 w-full sm:w-auto ${"bg-secondary text-secondary-foreground hover:bg-secondary/90 cursor-pointer"
+              }`}
           >
             <TrendingUp className="w-4 h-4" />
             Weekly Report
@@ -140,18 +138,18 @@ export function DailyJournal() {
             {/* Date Display */}
             <div className="flex items-center justify-center gap-2 mb-4 text-muted-foreground">
               <Calendar className="w-5 h-5" />
-              <span className="text-lg">{new Date().toLocaleDateString("en-US", { 
-                weekday: "long", 
-                year: "numeric", 
-                month: "long", 
-                day: "numeric" 
+              <span className="text-lg">{new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
               })}</span>
             </div>
 
             {/* Notebook Style Journal */}
             <div className="relative">
               {/* Notebook Paper Effect */}
-              <div 
+              <div
                 className="bg-input-background rounded-lg shadow-2xl border overflow-hidden relative"
                 style={{
                   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06)"
@@ -159,9 +157,9 @@ export function DailyJournal() {
               >
                 {/* Red Margin Line */}
                 <div className="sm:absolute left-16 top-0 bottom-0 w-0.5 bg-red-300/40 z-10"></div>
-                
+
                 {/* Ruled Lines Background */}
-                <div 
+                <div
                   className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg"
                   style={{
                     backgroundImage: "repeating-linear-gradient(transparent, transparent 39px, #cbd5e1 39px, #cbd5e1 40px)",
@@ -220,6 +218,7 @@ Write about your day here..."
             ) : (
               [...entries]
                 .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .slice(0, seeAll ? entries.length : 4)
                 .map((entry, index) => (
                   <motion.div
                     key={index}
@@ -232,7 +231,7 @@ Write about your day here..."
                       <Calendar className="w-5 h-5 text-primary" />
                       <span className="text-foreground">{formatDate(entry.created_at)}</span>
                     </div>
-                    <p 
+                    <p
                       className="text-foreground whitespace-pre-wrap"
                       style={{
                         fontSize: "15px",
@@ -244,7 +243,31 @@ Write about your day here..."
                   </motion.div>
                 ))
             )}
+            {entries.length > 4 && (
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ layout: { duration: 0.4, ease: "easeInOut" }, duration: 0.4 }}
+              className="mt-6 text-center"
+            >
+              <motion.button
+                onClick={() =>{ 
+                  setSeeAll(prev => !prev);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 rounded-xl transition-all duration-300 cursor-pointer"
+              >
+                {seeAll ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+                {seeAll ? "See Less" : "See All" }
+              </motion.button>
+            </motion.div>
+            )}
           </motion.div>
+          
         )}
       </div>
     </div>
