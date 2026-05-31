@@ -35,7 +35,7 @@ export function ProfilePage() {
 
   const [isEditProfile, setIsEditProfile] = useState(false)
   const [isEmailPreference, setIsEmailPreference] = useState(true)
-  const { user, setUser } = useAuth()
+  const { user, setUser, setIsLoggingOut } = useAuth()
   const navigate = useNavigate();
   const { setAlert } = useAlert();
   const { register: register1, handleSubmit: handleSubmit1, trigger: trigger1 } = useForm<accountFormData>()
@@ -125,7 +125,7 @@ export function ProfilePage() {
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
       setUser(null)
-      navigate("/");
+      setIsLoggingOut(true)
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
     } finally {
@@ -139,7 +139,7 @@ export function ProfilePage() {
       setAlert({ message: res.data?.message || "Account deleted successfully", severity: "success" });
       localStorage.clear()
       setUser(null)
-      navigate("/");
+      setIsLoggingOut(true)
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while deleting account", severity: "error" });
     } finally {

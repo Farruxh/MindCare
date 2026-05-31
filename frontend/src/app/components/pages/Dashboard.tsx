@@ -15,7 +15,7 @@ export function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { setAlert } = useAlert();
-  const { setUser } = useAuth()
+  const { setUser, setIsLoggingOut } = useAuth()
   useDocumentTitle("Dashboard | MindCare");
   const [loader, setLoader] = useState(false)
   const [assessmentHistory, setAssessmentHistory] = useState<{
@@ -102,7 +102,7 @@ export function Dashboard() {
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
       setUser(null)
-      navigate("/");
+      setIsLoggingOut(true)
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while logging out", severity: "error" });
     } finally {
