@@ -8,7 +8,7 @@ import { useEffect } from "react";
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isLoggingOut, setIsLoggingOut } = useAuth();
   useDocumentTitle("MindCare")
   
   const fadeInUp = {
@@ -41,11 +41,14 @@ export function LandingPage() {
   ];
 
   useEffect(() => {
-    if (!isLoading && user) {
-      navigate("/dashboard");
+    if (!isLoading) {
+      if (user) {
+        navigate("/dashboard");
+      } else if (isLoggingOut) {
+        setIsLoggingOut(false);
+      }
     }
-
-  }, [user, isLoading])
+  }, [user, isLoading, isLoggingOut, setIsLoggingOut, navigate]);
 
   if (isLoading) return <Loader />;
 

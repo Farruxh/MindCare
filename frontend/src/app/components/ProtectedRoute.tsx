@@ -4,14 +4,17 @@ import Loader from "./loader/loader"
 import { JSX, ReactNode, useEffect } from "react"
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }): JSX.Element => {
-    const { user, isLoading } = useAuth()
+    const { user, isLoading, isLoggingOut, setIsLoggingOut } = useAuth()
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!isLoading && !user) {
+        if (isLoading) return;
+        if (!user && !isLoggingOut) {
             navigate("/login");
+        } else if (!user && isLoggingOut) {
+            navigate("/");
         }
-    }, [isLoading, user, navigate]);
+    }, [isLoading, user, isLoggingOut, navigate]);
 
     if (isLoading) return <Loader />
     if (!user) return <></>

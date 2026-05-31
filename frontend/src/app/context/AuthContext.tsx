@@ -17,6 +17,8 @@ interface userContextType {
     user: userType | null
     setUser: (user: userType | null) => void
     isLoading: boolean
+    isLoggingOut: boolean
+    setIsLoggingOut: (isLoggingOut: boolean) => void
 }
 
 const AuthContext = createContext<userContextType | null>(null)
@@ -24,6 +26,7 @@ const AuthContext = createContext<userContextType | null>(null)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<userType | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [isLoggingOut, setIsLoggingOut] = useState(false)
     const { setAlert } = useAlert()
     let isRefreshing = false
 
@@ -88,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, [])
 
     return (
-        <AuthContext.Provider value={{ user, setUser, isLoading }}>
+        <AuthContext.Provider value={{ user, setUser, isLoading, isLoggingOut, setIsLoggingOut }}>
             {children}
         </AuthContext.Provider>
     )
