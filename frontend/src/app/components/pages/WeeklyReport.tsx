@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, TrendingUp, TrendingDown, Calendar, MessageCircle, MapPin, BookOpen, AlertCircle, Brain, Zap, CloudRain } from "lucide-react";
+import { ArrowLeft, TrendingUp, Calendar, MessageCircle, MapPin, BookOpen, Brain, Zap, CloudRain, Smile, BookDashed } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -55,64 +55,78 @@ export function WeeklyReport() {
   // Generate recommendations
   const recommendations: string[] = [];
   if (analysis?.dominant_state === "Anxiety") {
-    if(analysis.state_counts?.["Anxiety"] > 7) {
+    if (analysis.state_counts?.["Anxiety"] > 7) {
       recommendations.push("Seek professional support, your anxiety levels are significantly elevated");
       recommendations.push("Practice deep breathing exercises multiple times daily");
       recommendations.push("Avoid caffeine and prioritize 7-8 hours of sleep");
     }
-    else if(analysis.state_counts?.["Anxiety"] > 3) {
+    else if (analysis.state_counts?.["Anxiety"] > 3) {
       recommendations.push("Try grounding techniques like the 5-4-3-2-1 method");
       recommendations.push("Limit exposure to stressful news or social media");
     }
-    else{
+    else {
       recommendations.push("Maintain your current routine and monitor your feelings");
       recommendations.push("Light exercise like walking can help manage mild anxiety");
     }
-  } 
+  }
   else if (analysis?.dominant_state === "Stress") {
-    if(analysis.state_counts?.["Stress"] > 7) {
+    if (analysis.state_counts?.["Stress"] > 7) {
       recommendations.push("Consider speaking with a mental health professional");
       recommendations.push("Break your responsibilities into smaller manageable tasks");
       recommendations.push("Set clear boundaries between work and personal time");
     }
-    else if(analysis.state_counts?.["Stress"] > 3) {
+    else if (analysis.state_counts?.["Stress"] > 3) {
       recommendations.push("Schedule regular breaks throughout your day");
       recommendations.push("Talk to someone you trust about what you're feeling");
     }
-    else{
+    else {
       recommendations.push("Keep journaling to stay aware of your stress triggers");
       recommendations.push("Maintain a consistent sleep schedule");
     }
   }
   else if (analysis?.dominant_state === "Depression") {
-    if(analysis.state_counts?.["Depression"] > 7) {
+    if (analysis.state_counts?.["Depression"] > 7) {
       recommendations.push("Engage in light physical activity, even a short walk can help");
       recommendations.push("Connect with a friend or loved one today");
       recommendations.push("Consider speaking with a mental health professional");
     }
-    else if(analysis.state_counts?.["Depression"] > 3) {
+    else if (analysis.state_counts?.["Depression"] > 3) {
       recommendations.push("Try to identify and celebrate small wins each day");
       recommendations.push("Engage in activities you usually enjoy, even if motivation is low");
     }
-    else{
+    else {
       recommendations.push("Continue journaling to track your emotional well-being");
       recommendations.push("Maintain social connections, even if it's just a quick chat");
     }
   }
-  else{
+  else {
     recommendations.push("Keep up with your current self-care routine");
     recommendations.push("Continue journaling to track your emotional well-being");
-  }  
-  
+  }
+
 
   const isSevere = analysis?.polarity_label === "At Risk";
 
   if (!analysis) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Analyzing your journal entries with ML...</p>
+      <div className="h-screen bg-gradient-to-br background flex flex-col">
+        {/* Header */}
+        <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
+          <div className="max-w-4xl mx-auto flex justify-between items-center">
+            <button
+              onClick={() => navigate("/daily-journal")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Journal
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
+          <div className="text-center">
+            <BookDashed className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No journal entries found for the past week.</p>
+          </div>
         </div>
       </div>
     );
@@ -126,13 +140,41 @@ export function WeeklyReport() {
       default: return { bg: "bg-muted", text: "text-foreground", border: "border-border" };
     }
   };
-  const getIconColor = (state: string) => {
-    switch (state) {
-      case "Normal": return "bg-white";
-      case "Anxiety": return "bg-[#4B5563]";
-      case "Stress": return "bg-[#DC2626]";
-      case "Depression": return "bg-[#1E3A5F]";
-      default: return "text-foreground";
+
+  const stateConfig = (dominantState: string) => {
+    switch (dominantState) {
+      case "Anxiety":
+        return {
+          icon: Brain,
+          label: "Anxiety",
+          color: "text-[#4B5563]",
+          bg: "bg-orange-100",
+          ring: "ring-orange-400",
+        };
+      case "Stress":
+        return {
+          icon: Zap,
+          label: "Stress",
+          color: "text-[#DC2626]",
+          bg: "bg-yellow-100",
+          ring: "ring-yellow-400",
+        };
+      case "Depression":
+        return {
+          icon: CloudRain,
+          label: "Depression",
+          color: "text-[#1E3A5F]",
+          bg: "bg-blue-100",
+          ring: "ring-blue-400",
+        };
+      default:
+        return {
+          icon: Smile,
+          label: "Normal",
+          color: "text-green-500",
+          bg: "bg-green-100",
+          ring: "ring-green-400",
+        };
     }
   };
 
@@ -140,7 +182,7 @@ export function WeeklyReport() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString("en-US", { 
+    const formattedDate = date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric"
@@ -185,19 +227,24 @@ export function WeeklyReport() {
           transition={{ delay: 0.1 }}
           className={`${severityColors.bg} border ${severityColors.border} rounded-2xl p-8 mb-6`}
         >
-        <div className="grid grid-cols-1 place-items-center md:flex md:items-center md:justify-between mb-4 gap-4 md:gap-0">
-          <h2 className={`text-2xl ${severityColors.text} text-center md:text-left`}>
+          <div className="grid grid-cols-1 place-items-center md:flex md:items-center md:justify-between mb-4 md:mb-0 gap-4 md:gap-0">
+            <h2 className={`text-2xl ${severityColors.text} text-center md:-mt-7 md:text-left`}>
               Overall Status: {analysis.polarity_label} (Score: {Math.round(analysis.weekly_polarity)})
             </h2>
-            {/* {analysis.trend === "Improving" ? (
-              <TrendingUp className={`w-8 h-8 ${severityColors.text}`} />
-            ) : analysis.trend === "Declining" ? (
-              <TrendingDown className={`w-8 h-8 ${severityColors.text}`} />
-            ) : ( */}
-            <div className={`w-10 h-10 rounded-full border-2 ${getIconColor(analysis.dominant_state)}`} ></div>
-             {/* )}  */}
+            {(() => {
+              const config = stateConfig(analysis.dominant_state);
+              const StateIcon = config.icon;
+              return (
+                <div className={`flex flex-col items-center justify-center w-18 h-18 rounded-full border-2 shadow-sm transition-all duration-500 ${config.ring} ${config.bg}`}>
+                  <StateIcon className={`w-6 h-6 ${config.color} mb-0.5`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-tight ${config.color}`}>
+                    {config.label}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground md:-mt-4">
             Your mood is {analysis.trend.toLowerCase()} over the past week.
             Dominant state detected: <strong>{analysis.dominant_state}</strong>
           </p>
@@ -274,10 +321,10 @@ export function WeeklyReport() {
           transition={{ delay: 0.3 }}
           className="bg-card rounded-2xl shadow-sm border border-border p-6 mb-6"
         >
-          <h3 className="mb-4 text-foreground text-center">Personalized Recommendations (for {analysis?.dominant_state})</h3>
+          <h3 className="mb-4 text-foreground text-center">Personalized Recommendations (for {analysis?.dominant_state} state)</h3>
           <div className="space-y-3">
             {recommendations.map((rec, index) => (
-            <motion.div
+              <motion.div
                 key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -291,7 +338,7 @@ export function WeeklyReport() {
               </motion.div>
             ))}
           </div>
-         </motion.div> 
+        </motion.div>
 
         {/* Action Buttons */}
         <motion.div
