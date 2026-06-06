@@ -109,24 +109,10 @@ export function WeeklyReport() {
 
   if (!analysis) {
     return (
-      <div className="h-screen bg-gradient-to-br background flex flex-col">
-        {/* Header */}
-        <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <button
-              onClick={() => navigate("/daily-journal")}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Journal
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
-          <div className="text-center">
-            <BookDashed className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No journal entries found for the past week.</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Analyzing your journal entries...</p>
         </div>
       </div>
     );
@@ -189,6 +175,31 @@ export function WeeklyReport() {
     })
     return formattedDate;
   };
+
+  if (entries.length === 0) {
+    return (
+      <div className="h-screen bg-gradient-to-br background flex flex-col">
+        {/* Header */}
+        <div className="bg-card/80 backdrop-blur-sm border-b border-border px-6 py-5">
+          <div className="max-w-4xl mx-auto flex justify-between items-center">
+            <button
+              onClick={() => navigate("/daily-journal")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              Back to Journal
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
+          <div className="text-center">
+            <BookDashed className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No journal entries found for the past week.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br background">
