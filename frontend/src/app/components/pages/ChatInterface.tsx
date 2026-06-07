@@ -6,7 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
-import Loader from "../loader/Loader";
+import Loader from "../loader/loader";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
@@ -266,7 +266,7 @@ export function ChatInterface() {
                 Chat {chats.length - index}
               </span>
               <Trash
-                className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 hover:scale-105 transition-transform"
+                className="w-4 h-4 text-destructive opacity-0 group-hover:opacity-100 hover:scale-105 transition-transform"
                 onClick={(e) => {
                   e.stopPropagation()
                   setConfirmDialog({

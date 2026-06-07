@@ -1,13 +1,15 @@
 import { motion } from "motion/react";
-import { ArrowLeft, BookOpen, Calendar, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, BookOpen, Calendar, TrendingUp, ChevronDown, ChevronUp, Trash } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
 import { useAlert } from "../../context/AlertContext";
 import Loader from "../loader/loader";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
+import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
 import axios from "axios";
 
 interface JournalEntry {
+  journal_id: number;
   content: string;
   created_at: string;
 }
@@ -21,6 +23,15 @@ export function DailyJournal() {
   const navigate = useNavigate();
   const { setAlert } = useAlert();
   const [seeAll, setSeeAll] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    text: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    onConfirm: () => { },
+  })
+  const closeConfirmDialog = () => setConfirmDialog(prev => ({ ...prev, open: false }));
 
   useEffect(() => {
     const fetchEntries = async () => {
@@ -58,6 +69,19 @@ export function DailyJournal() {
 
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "Failed to save entry.", severity: "error" });
+    } finally {
+      setLoader(false);
+    }
+  };
+
+  const handleDeleteJournalEntry = async (journal_id: number) => {
+    try {
+      setLoader(true);
+      const res = await axios.delete(`/api/v1/journal/delete/${journal_id}`, { withCredentials: true });
+      setAlert({ message: res.data?.message || "Entry deleted successfully!", severity: "success" });
+      setEntries(prev => prev.filter(entry => entry.journal_id !== journal_id));
+    } catch (error: any) {
+      setAlert({ message: error.response?.data?.detail || "Failed to delete entry.", severity: "error" });
     } finally {
       setLoader(false);
     }
@@ -111,8 +135,8 @@ export function DailyJournal() {
             <button
               onClick={() => setViewMode("history")}
               className={`px-4 py-2 rounded-xl transition-all duration-300 cursor-pointer w-full sm:w-auto ${viewMode === "history"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "bg-card border border-border text-muted-foreground hover:text-foreground"
                 }`}
             >
               History ({entries.length})
@@ -227,9 +251,28 @@ Write about your day here..."
                     transition={{ delay: index * 0.05 }}
                     className="bg-input-background rounded-md shadow-md border p-8 hover:shadow-lg transition-all duration-300"
                   >
-                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
-                      <Calendar className="w-5 h-5 text-primary" />
-                      <span className="text-foreground">{formatDate(entry.created_at)}</span>
+                    <div className="flex md:justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <span className="text-foreground">{formatDate(entry.created_at)}</span>
+                      </div>
+                      <Trash
+                        className="w-5 h-5 text-destructive group-hover:opacity-100 hover:scale-105 transition-transform cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setConfirmDialog({
+                            open: true,
+                            title: "Delete Journal Entry",
+                            text: "Are you sure you want to delete this journal entry?",
+                            confirmText: "Delete",
+                            cancelText: "Cancel",
+                            onConfirm: () => {
+                              closeConfirmDialog()
+                              handleDeleteJournalEntry(entry.journal_id)
+                            }
+                          })
+                        }}
+                      />
                     </div>
                     <p
                       className="text-foreground whitespace-pre-wrap"
@@ -244,30 +287,41 @@ Write about your day here..."
                 ))
             )}
             {entries.length > 4 && (
-            <motion.div
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ layout: { duration: 0.4, ease: "easeInOut" }, duration: 0.4 }}
-              className="mt-6 text-center"
-            >
-              <motion.button
-                onClick={() =>{ 
-                  setSeeAll(prev => !prev);
-                }}
-                className="inline-flex items-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 rounded-xl transition-all duration-300 cursor-pointer"
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ layout: { duration: 0.4, ease: "easeInOut" }, duration: 0.4 }}
+                className="mt-6 text-center"
               >
-                {seeAll ? (
-                  <ChevronUp className="w-5 h-5" />
-                ) : (
-                  <ChevronDown className="w-5 h-5" />
-                )}
-                {seeAll ? "See Less" : "See All" }
-              </motion.button>
-            </motion.div>
+                <motion.button
+                  onClick={() => {
+                    setSeeAll(prev => !prev);
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-muted hover:bg-muted/80 rounded-xl transition-all duration-300 cursor-pointer"
+                >
+                  {seeAll ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                  {seeAll ? "See Less" : "See All"}
+                </motion.button>
+              </motion.div>
             )}
+
+            {/* Confirm Dialog */}
+            <GlobalConfirmBox
+              open={confirmDialog.open}
+              title={confirmDialog.title}
+              text={confirmDialog.text}
+              confirmText={confirmDialog.confirmText}
+              cancelText={confirmDialog.cancelText}
+              onConfirm={confirmDialog.onConfirm}
+              onCancel={closeConfirmDialog}
+            />
           </motion.div>
-          
+
         )}
       </div>
     </div>
