@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.schemas.daily_journal import DailyJournalCreate, DailyJournalResponse
 from app.schemas.ApiResponse import ApiResponse
-from app.services.daily_journal import create_journal_entry, get_user_journals, get_weekly_journals
+from app.services.daily_journal import create_journal_entry, get_user_journals, get_weekly_journals, delete_journal_entry
 from app.dependency.auth import auth_dependency
 from typing import List
 
@@ -40,5 +40,20 @@ def get_weekly_journal(
     try:
         journals = get_weekly_journals(db, current_user)
         return ApiResponse(status_code=200, data=journals, message="Weekly journal entries fetched successfully")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+@router.delete("/delete/{journal_id}", response_model=ApiResponse[bool])
+def delete_journal_by_id(
+    journal_id: int,
+    db: Session = Depends(get_db),
+    current_user: int = Depends(auth_dependency)
+):
+    try:
+        success = delete_journal_entry(db, journal_id, current_user)
+        if success:
+            return ApiResponse(status_code=200, data=True, message="Journal entry deleted successfully")
+        else:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -24,3 +24,14 @@ def get_weekly_journals(db: Session, user_id: int):
         DailyJournal.user_id == user_id,
         DailyJournal.created_at >= week
     ).all()
+
+def delete_journal_entry(db: Session, journal_id: int, user_id: int):
+    entry = db.query(DailyJournal).filter(
+        DailyJournal.journal_id == journal_id,
+        DailyJournal.user_id == user_id
+    ).first()
+    if entry:
+        db.delete(entry)
+        db.commit()
+        return True
+    return False
