@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom"
 import { Brain, Eye, EyeOff, Lock } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form"
-import axios from "axios"
+import axiosInstance from "../../../api/axiosInstance.js"
 import { useAlert } from "../../context/AlertContext.tsx";
 import { useState } from "react"
 import Loader from "../loader/loader.tsx"
@@ -25,7 +25,7 @@ export function ResetPassword() {
     const handleOnSubmit: SubmitHandler<formData> = async (data) => {
         try {
             setLoader(true);
-            const res = await axios.patch("/api/v1/users/reset-password", data, { withCredentials: true });
+            const res = await axiosInstance.patch("/api/v1/users/reset-password", data);
             setAlert({ message: res.data?.message || "Password Reset Successfully.", severity: "success" })
             navigate("/login");
         } catch (error: any) {

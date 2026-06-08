@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom"
 import { Brain, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { useForm, SubmitHandler } from "react-hook-form"
-import axios from "axios"
+import axiosInstance from "../../../api/axiosInstance.js"
 import { useAlert } from "../../context/AlertContext.tsx";
 import { useState } from "react";
 import Loader from "../loader/loader.tsx";
@@ -27,7 +27,7 @@ export function SignUpPage() {
   const handleOnSubmit: SubmitHandler<formData> = async (data) => {
     try {
       setLoader(true);
-      const res = await axios.post("/api/v1/users/register-user", data);
+      const res = await axiosInstance.post("/api/v1/users/register-user", data);
       setAlert({ message: res.data.message || "Account Successfully Created.", severity: "success" })
       navigate("/login");
     } catch (error: any) {

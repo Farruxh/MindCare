@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, MapPin, Phone, ExternalLink, Home } from "lucide-react";
 import { useState } from "react";
 import Loader from "../loader/loader";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useAlert } from "../../context/AlertContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom"
@@ -39,8 +39,8 @@ export function ClinicLocator() {
         const { latitude, longitude } = position.coords;
         try {
           const [res] = await Promise.all([
-            axios.get("/api/v1/clinics/nearest", {params: { user_lat: latitude, user_lon: longitude }, withCredentials: true}),
-            axios.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" }, { withCredentials: true })
+            axiosInstance.get("/api/v1/clinics/nearest", {params: { user_lat: latitude, user_lon: longitude }}),
+            axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" })
           ])
           const data = res.data.data;
 
@@ -86,10 +86,10 @@ export function ClinicLocator() {
 
     try {
       const [res] = await Promise.all([
-        axios.get("/api/v1/clinics/nearest", {
+        axiosInstance.get("/api/v1/clinics/nearest", {
         params: { user_lat: lat, user_lon: lon },
-        withCredentials: true}), 
-        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" }, { withCredentials: true })
+        }), 
+        axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Searched nearby clinics" })
       ])
       const data = res.data.data;
 

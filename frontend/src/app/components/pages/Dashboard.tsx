@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Brain, MessageCircle, ClipboardList, Sparkles, MapPin, User, LogOut, BookOpen, Activity } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext"
@@ -44,7 +44,7 @@ export function Dashboard() {
   useEffect(() => {
     const getAssessmentHistory = async () => {
       try {
-        const res = await axios.get("/api/v1/assessments/my-assessment", { withCredentials: true })
+        const res = await axiosInstance.get("/api/v1/assessments/my-assessment")
         setAssessmentHistory(res.data.data ?? [])
       } catch (error: any) {
         setAlert({ message: error.response.data?.detail || "Unable to fetch assessment history", severity: "error" });
@@ -56,7 +56,7 @@ export function Dashboard() {
   useEffect(() => {
     const getRecentActivity = async () => {
       try {
-        const res = await axios.get("/api/v1/users/recent-activity/get", { withCredentials: true })
+        const res = await axiosInstance.get("/api/v1/users/recent-activity/get")
         const formattedActivities = res.data.data.map((activity: any) => ({
           type: activity.activity_type,
           created_at: activity.created_at
@@ -98,7 +98,7 @@ export function Dashboard() {
   const handleLogout = async () => {
     try {
       setLoader(true)
-      const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
+      const res = await axiosInstance.get("/api/v1/users/logout")
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
       setUser(null)

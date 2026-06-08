@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, User, Mail, Lock, Bell, Moon, Sun, LogOut, MapPin, EyeOff, Eye } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
 import { useForm, SubmitHandler } from "react-hook-form"
@@ -59,7 +59,7 @@ export function ProfilePage() {
   const handleUpdateAccountDetail: SubmitHandler<accountFormData> = async (data) => {
     try {
       setLoader(true)
-      const res = await axios.patch("/api/v1/users/update-account", data, { withCredentials: true })
+      const res = await axiosInstance.patch("/api/v1/users/update-account", data)
       setUser(res.data.data)
       setAlert({ message: res.data?.message || "Account information updated successfully", severity: "success" })
     } catch (error: any) {
@@ -74,7 +74,7 @@ export function ProfilePage() {
     const newTheme = isDarkMode === "light" ? "dark" : "light";
     try {
       setLoader(true)
-      await axios.patch("/api/v1/users/update-dark-mode", { theme: newTheme }, { withCredentials: true })
+      await axiosInstance.patch("/api/v1/users/update-dark-mode", { theme: newTheme })
       setIsDarkMode(newTheme)
       if (user) {
         setUser({ ...user, dark_mode: newTheme });
@@ -91,7 +91,7 @@ export function ProfilePage() {
     const newPreference = !isEmailPreference;
     try {
       setLoader(true)
-      await axios.patch("/api/v1/users/update-account", { is_email_notification: newPreference }, { withCredentials: true })
+      await axiosInstance.patch("/api/v1/users/update-account", { is_email_notification: newPreference })
       setIsEmailPreference(newPreference)
       if (user) {
         setUser({ ...user, is_email_notification: newPreference });
@@ -107,7 +107,7 @@ export function ProfilePage() {
   const handleUpdatePassword: SubmitHandler<passwordFormData> = async (data) => {
     try {
       setLoader(true)
-      const res = await axios.patch("/api/v1/users/update-current-password", data, { withCredentials: true })
+      const res = await axiosInstance.patch("/api/v1/users/update-current-password", data)
       setUser(res.data.data)
       setAlert({ message: res.data?.message || "Password Updated Successfully", severity: "success" })
     } catch (error: any) {
@@ -121,7 +121,7 @@ export function ProfilePage() {
   const handleLogOut = async () => {
     try {
       setLoader(true)
-      const res = await axios.get("/api/v1/users/logout", { withCredentials: true })
+      const res = await axiosInstance.get("/api/v1/users/logout")
       setAlert({ message: res.data?.message || "Logged out successfully", severity: "success" });
       localStorage.clear()
       setUser(null)
@@ -135,7 +135,7 @@ export function ProfilePage() {
   const handleDeleteAccount = async () => {
     try {
       setLoader(true)
-      const res = await axios.delete("/api/v1/users/delete-account", { withCredentials: true })
+      const res = await axiosInstance.delete("/api/v1/users/delete-account")
       setAlert({ message: res.data?.message || "Account deleted successfully", severity: "success" });
       localStorage.clear()
       setUser(null)
@@ -150,7 +150,7 @@ export function ProfilePage() {
   const handleAssessmentDelete = async () => {
     try {
       setLoader(true)
-      const res = await axios.delete("/api/v1/assessments/delete", { withCredentials: true })
+      const res = await axiosInstance.delete("/api/v1/assessments/delete")
       setAlert({ message: res.data?.message || "Assessments deleted successfully", severity: "success" });
     } catch (error: any) {
       setAlert({ message: error.response?.data?.detail || "An error occurred while deleting assessments", severity: "error" });
@@ -171,7 +171,7 @@ export function ProfilePage() {
         const { latitude, longitude } = position.coords;
         const data = { latitude, longitude }
         try {
-          const res = await axios.patch("/api/v1/users/update-account", data, { withCredentials: true });
+          const res = await axiosInstance.patch("/api/v1/users/update-account", data);
           if (res.data?.data) {
             setUser(res.data.data);
           }

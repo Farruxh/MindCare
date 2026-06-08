@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowLeft, TrendingUp, Calendar, MessageCircle, MapPin, BookOpen, Brain, Zap, CloudRain, Smile, BookDashed } from "lucide-react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../../context/AlertContext";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -33,8 +33,8 @@ export function WeeklyReport() {
     const fetchWeeklyData = async () => {
       try {
         const [entriesRes, reportRes] = await Promise.all([
-          axios.get("/api/v1/journal/weekly", { withCredentials: true }),
-          axios.get("/api/v1/mental_health/latest-report", { withCredentials: true })
+          axiosInstance.get("/api/v1/journal/weekly"),
+          axiosInstance.get("/api/v1/mental_health/latest-report")
         ]);
 
         if (entriesRes.data?.data) {

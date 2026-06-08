@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Brain, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useNavigate } from "react-router-dom"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useAlert } from "../../context/AlertContext.tsx";
@@ -26,7 +26,7 @@ export function LoginPage() {
   const handleOnSubmit: SubmitHandler<formData> = async (data) => {
     try {
       setLoader(true)
-      const res = await axios.post("/api/v1/users/login", data, { withCredentials: true });
+      const res = await axiosInstance.post("/api/v1/users/login", data);
       setAlert({ message: res.data?.message || "Login successfully", severity: "success" });
       setUser(res.data.data)
       localStorage.setItem("isLoggedIn", "true")

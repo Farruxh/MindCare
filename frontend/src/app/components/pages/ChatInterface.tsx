@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Send, Bot, User, ArrowLeft, PanelRight, Plus, MessageSquare, X, Trash } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom"
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext"
 import { useAlert } from "../../context/AlertContext";
@@ -68,7 +68,7 @@ export function ChatInterface() {
   useEffect(() => {
     const fetchPolarity = async () => {
       try {
-        const res = await axios.get("/api/v1/mental_health/snapshot", { withCredentials: true });
+        const res = await axiosInstance.get("/api/v1/mental_health/snapshot");
         if (res.data?.data) {
           setPolarity(res.data.data);
         }
@@ -82,7 +82,7 @@ export function ChatInterface() {
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
-        const res = await axios.get("/api/v1/chats/all", { withCredentials: true })
+        const res = await axiosInstance.get("/api/v1/chats/all");
         setChats(res.data?.data || [])
       } catch (error: any) {
         console.log(error.response?.data?.detail);
@@ -95,8 +95,8 @@ export function ChatInterface() {
     try {
       setLoader(true)
       const [chatRes] = await Promise.all([
-        axios.post("/api/v1/chats/", {}, { withCredentials: true }),
-        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
+        axiosInstance.post("/api/v1/chats/", {}),
+        axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" })
       ])
       const chat_id = chatRes.data?.data.chat_id
       navigate(`/assistant/${chat_id}`)
@@ -111,7 +111,7 @@ export function ChatInterface() {
     if (chat_id) {
       const fetchMessages = async () => {
         try {
-          const res = await axios.get(`/api/v1/messages/${chat_id}/get`, { withCredentials: true })
+          const res = await axiosInstance.get(`/api/v1/messages/${chat_id}/get`);
           setMessages([welcomeMessage, ...(res.data?.data || [])])
         } catch (error: any) {
           setMessages([welcomeMessage])
@@ -126,7 +126,7 @@ export function ChatInterface() {
   const handleDeleteChat = async (chat_id: number) => {
     try {
       setLoader(true)
-      await axios.delete(`/api/v1/chats/${chat_id}/delete-by-id`, { withCredentials: true })
+      await axiosInstance.delete(`/api/v1/chats/${chat_id}/delete-by-id`)
       setChats((prev) => prev.filter((c) => c.chat_id !== chat_id))
       if (Number(chat_id) === Number(chat_id)) {
         setMessages([welcomeMessage])
@@ -161,15 +161,15 @@ export function ChatInterface() {
       let res
       if (!chat_id) {
         const [chatRes] = await Promise.all([
-          axios.post("/api/v1/chats/", {}, { withCredentials: true }),
-          axios.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" }, { withCredentials: true })
+          axiosInstance.post("/api/v1/chats/", {}),
+          axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" })
         ])
         const chat_id = chatRes.data?.data.chat_id
-        res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+        res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
         navigate(`/assistant/${chat_id}`)
       }
       else {
-        res = await axios.post(`/api/v1/messages/${chat_id}/message`, payload, { withCredentials: true })
+        res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
       }
       const aiMessage: Message = {
         role: res.data?.data.role,
