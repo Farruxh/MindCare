@@ -1,7 +1,7 @@
 import { motion } from "motion/react"
 import { Brain, Mail } from "lucide-react"
 import { useForm, SubmitHandler } from "react-hook-form"
-import axios from "axios"
+import axiosInstance from "../../../api/axiosInstance.js"
 import { useNavigate } from "react-router-dom"
 import { useAlert } from "../../context/AlertContext"
 import Loader from "../loader/loader"
@@ -22,7 +22,7 @@ export function ForgotPassword() {
     const handleSubmitEmail: SubmitHandler<formData> = async (data) => {
         try {
             setLoader(true)
-            const res = await axios.post("/api/v1/users/forget-password", data)
+            const res = await axiosInstance.post("/api/v1/users/forget-password", data)
             setAlert({ message: res.data?.message || "Password reset token sent successfully", severity: "success" })
             sessionStorage.setItem("otpTimer", (Date.now() + 30000).toString())
             navigate("/verify-token" , {state: {email: data.email}})

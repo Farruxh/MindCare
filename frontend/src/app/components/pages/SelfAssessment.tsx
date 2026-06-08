@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useAlert } from "../../context/AlertContext"
 import Loader from "../loader/loader";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -185,8 +185,8 @@ export function SelfAssessment() {
       console.log(isEmailPreference);
       setLoader(true)
       const [res] = await Promise.all([
-        axios.post("/api/v1/assessments/create", payload, { withCredentials: true }),
-        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Completed Mental Health Assessment" }, { withCredentials: true })
+        axiosInstance.post("/api/v1/assessments/create", payload),
+        axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Completed Mental Health Assessment" })
       ])
       setAlert({ message: res.data.message || "Assessment results saved successfully!", severity: "success" })
     } catch (error: any) {

@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, Play, Pause, Wind, Headphones, Heart, Waves } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 export function MeditationPage() {
@@ -196,7 +196,7 @@ export function MeditationPage() {
 };
 
   const handleExerciseView = async (activity: string) => {
-    await axios.post("/api/v1/users/recent-activity/create", { activity_type: activity }, { withCredentials: true });
+    await axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: activity });
   }
 
   const groundingTechniques = [

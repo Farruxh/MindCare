@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useRef, useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js";
 import { useAlert } from "../../context/AlertContext";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom"
@@ -41,7 +41,7 @@ export function VerifyPasswordToken() {
       const data = { email: location.state?.email, token }
       try {
         setLoader(true)
-        await axios.post("/api/v1/users/verify-password-token", data, { withCredentials: true });
+        await axiosInstance.post("/api/v1/users/verify-password-token", data);
         sessionStorage.removeItem("otpTimer");
         navigate("/reset-password")
       } catch (error: any) {
@@ -74,7 +74,7 @@ export function VerifyPasswordToken() {
   const handleResendToken = async () => {
     try {
       setLoader(true)
-      const res = await axios.post("/api/v1/users/forget-password", { email: location.state?.email })
+      const res = await axiosInstance.post("/api/v1/users/forget-password", { email: location.state?.email })
       setAlert({ message: res.data?.message || "Password reset token sent successfully", severity: "success" })
       navigate("/verify-token", { state: { email: location.state?.email } })
     } catch (error: any) {

@@ -6,7 +6,7 @@ import { useAlert } from "../../context/AlertContext";
 import Loader from "../loader/loader";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { GlobalConfirmBox } from "../Global/GlobalConfirmBox";
-import axios from "axios";
+import axiosInstance from "../../../api/axiosInstance.js"
 
 interface JournalEntry {
   journal_id: number;
@@ -37,7 +37,7 @@ export function DailyJournal() {
     const fetchEntries = async () => {
       try {
         setLoader(true);
-        const res = await axios.get("/api/v1/journal/all", { withCredentials: true });
+        const res = await axiosInstance.get("/api/v1/journal/all");
         setEntries(res.data.data ?? []);
       } catch (error: any) {
         setAlert({ message: error.response?.data?.detail || "Failed to load journal entries.", severity: "error" });
@@ -54,17 +54,17 @@ export function DailyJournal() {
     try {
       setLoader(true);
       const [res] = await Promise.all([
-        axios.post("/api/v1/journal/create", {
+        axiosInstance.post("/api/v1/journal/create", {
           content: currentEntry
-        }, { withCredentials: true }),
-        axios.post("/api/v1/users/recent-activity/create", { activity_type: "Created a journal entry" }, { withCredentials: true })
+        }),
+        axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Created a journal entry" })
       ]);
 
       setAlert({ message: res.data?.message || "Entry saved successfully!", severity: "success" });
       setCurrentEntry("");
 
       // Refresh entries list to show the new/appended entry in history
-      const entriesRes = await axios.get("/api/v1/journal/all", { withCredentials: true });
+      const entriesRes = await axiosInstance.get("/api/v1/journal/all");
       setEntries(entriesRes.data.data ?? []);
 
     } catch (error: any) {
@@ -77,7 +77,7 @@ export function DailyJournal() {
   const handleDeleteJournalEntry = async (journal_id: number) => {
     try {
       setLoader(true);
-      const res = await axios.delete(`/api/v1/journal/delete/${journal_id}`, { withCredentials: true });
+      const res = await axiosInstance.delete(`/api/v1/journal/delete/${journal_id}`);
       setAlert({ message: res.data?.message || "Entry deleted successfully!", severity: "success" });
       setEntries(prev => prev.filter(entry => entry.journal_id !== journal_id));
     } catch (error: any) {
