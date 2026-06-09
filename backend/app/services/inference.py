@@ -4,8 +4,9 @@ from typing import List, Dict, Any
 from transformers import pipeline
 
 # Base directory is three levels up from this file (app/services/inference.py -> app/services -> app -> backend)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-MODEL_PATH = os.path.join(BASE_DIR, "model")
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# MODEL_PATH = os.path.join(BASE_DIR, "model")
+MODEL_PATH = "farrukhweb/mindcare"
 
 # Load model once at startup
 classifier = None
