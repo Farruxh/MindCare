@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import axios from "axios"
+import axiosInstance from "../../api/axiosInstance.js"
 import { useAlert } from "./AlertContext"
 
 interface userType {
@@ -33,15 +33,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await axios.get("/api/v1/users/me", { withCredentials: true });
+                const res = await axiosInstance.get("/api/v1/users/me");
                 setUser(res.data.data);
             } catch (error: any) {
                 if (error.response?.status === 401 && !isRefreshing) {
                     isRefreshing = true
                     try {
-                        await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
+                        await axiosInstance.post("/api/v1/users/refresh-token", {});
 
-                        const retryRes = await axios.get("/api/v1/users/me", { withCredentials: true });
+                        const retryRes = await axiosInstance.get("/api/v1/users/me");
                         setUser(retryRes.data.data);
                         return;
                     } catch (refreshError) {
@@ -65,15 +65,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setIsLoading(false)
         }
 
-        const interceptor = axios.interceptors.response.use(
+        const interceptor = axiosInstance.interceptors.response.use(
             (response) => response,
             async (error) => {
                 if (error.response?.status === 401 && !error.config._retry && !isRefreshing) {
                     error.config._retry = true;
                     isRefreshing = true
                     try {
-                        await axios.post("/api/v1/users/refresh-token", {}, { withCredentials: true });
-                        return axios(error.config);
+                        await axiosInstance.post("/api/v1/users/refresh-token", {});
+                        return axiosInstance(error.config);
                     } catch (e) {
                         setAlert({ message: "Session expired. Please log in again.", severity: "error" });
                         setUser(null);
@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
         );
 
-        return () => axios.interceptors.response.eject(interceptor);
+        return () => axiosInstance.interceptors.response.eject(interceptor);
     }, [])
 
     return (
