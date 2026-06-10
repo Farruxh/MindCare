@@ -32,7 +32,7 @@ def login(data: UserLogin, response: Response, db: Session = Depends(get_db)):
         value=access_token, 
         httponly=True, 
         secure=True,
-        sameSite="none"
+        samesite="none"
     )
 
     response.set_cookie(
@@ -40,7 +40,7 @@ def login(data: UserLogin, response: Response, db: Session = Depends(get_db)):
         value=refresh_token, 
         httponly=True, 
         secure=True,
-        sameSite="none"
+        samesite="none"
     )
     return ApiResponse(status_code=200, data=user, message="Log in successfully")
 
@@ -92,7 +92,7 @@ def verify_password_token(data: UserVerifyToken, response: Response, db = Depend
             httponly=True,
             max_age=100,  # seconds
             secure=False,  # HTTPS only
-            sameSite="none"
+            samesite="none"
     )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -126,14 +126,14 @@ def refreshToken(request: Request, response: Response, db: Session = Depends(get
         value=access_token, 
         httponly=True, 
         secure=True,
-        sameSite="none"
+        samesite="none"
     )
     response.set_cookie(
         key="refresh_token", 
         value=refresh_token, 
         httponly=True, 
         secure=True,
-        sameSite="none"
+        samesite="none"
     )
     return ApiResponse(status_code=200, data={"access_token": access_token, "refresh_token": refresh_token}, message="Access Token refreshed Successfully")
 
