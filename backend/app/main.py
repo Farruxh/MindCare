@@ -29,12 +29,11 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["*"],
+    allow_origins = settings.CORS_ORIGIN,
     allow_credentials = True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 from app.routes import user
 from app.routes import assessment
