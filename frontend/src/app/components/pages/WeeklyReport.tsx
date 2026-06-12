@@ -191,7 +191,7 @@ export function WeeklyReport() {
             </button>
           </div>
         </div>
-        <div className="flex-1 bg-gradient-to-br from-slate-50 via-stone-50 to-slate-100 flex items-center justify-center">
+        <div className="flex-1 bg-gradient-to-br background flex items-center justify-center">
           <div className="text-center">
             <BookDashed className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground">No journal entries found for the past week.</p>
@@ -228,7 +228,7 @@ export function WeeklyReport() {
             <span className="text-sm text-muted-foreground">Last 7 Days Analysis ({formatDate(entries[0]?.created_at)} to {formatDate(entries[entries.length - 1]?.created_at)})</span>
           </div>
           <h1 className="text-3xl mb-2">Your Weekly Mental Wellness Report</h1>
-          <p className="text-muted-foreground">Based on {entries.length} journal entries</p>
+          <p className="text-muted-foreground">Based on {entries.length} journal entries, entries will be analyzed for sentiment and mood patterns every Monday.</p>
         </motion.div>
 
         {/* Overall Status */}
