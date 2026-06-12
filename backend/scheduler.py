@@ -80,3 +80,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     run_scheduler(args.user_id)
+    print("Scheduler run completed.")
