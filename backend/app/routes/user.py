@@ -90,8 +90,8 @@ def verify_password_token(data: UserVerifyToken, response: Response, db = Depend
             key="reset_token",
             value=data.token,
             httponly=True,
-            max_age=100,  # seconds
-            secure=False,  # HTTPS only
+            max_age=100,
+            secure=True, 
             samesite="none"
     )
     except Exception as e:
