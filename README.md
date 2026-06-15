@@ -1,6 +1,6 @@
 # MindCare - AI-Powered Mental Health Companion
 
-MindCare is a comprehensive, state-of-the-art mental health companion designed to provide emotional support, track user wellbeing, and guide users to professional clinical help when necessary. The platform combines conversational AI with local machine learning models, structured self-assessments, persistent daily journaling, and interactive wellness resources to create a private, supportive, and data-driven emotional support system.
+MindCare is a comprehensive, state-of-the-art mental health companion proposed as our final year project designed to provide emotional support, track user wellbeing, and guide users to professional clinical help when necessary. The platform combines conversational AI with local machine learning models, structured self-assessments, persistent daily journaling, and interactive wellness resources to create a private, supportive, and data-driven emotional support system.
 
 ---
 
@@ -108,9 +108,12 @@ MindCare/
 └── frontend/
     ├── public/               # Static assets (audios)
     ├── src/
+    │   ├── api/              # AxiosInstance for API calls
     │   ├── app/
     │   │   ├── components/   # Pages & shared UI components
+    │   │   ├── pages/        # Dashboard, Assessment, and Wellness page components
     │   │   ├── context/      # AuthContext & state providers
+    │   │   ├── hooks/        # Custom hook for document title
     │   │   ├── App.tsx       # Root Component
     │   │   └── AppRoutes.tsx # Client Route configurations
     │   ├── styles/           # Global styles and custom CSS variables
