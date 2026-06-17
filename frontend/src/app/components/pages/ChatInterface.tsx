@@ -218,7 +218,8 @@ export function ChatInterface() {
           </div>
         </div>
         <button
-          className="ml-auto p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer"
+          title={isSideBarOpen ? "Close Sidebar" : "Open Sidebar"}
+          className= "ml-auto p-2 hover:bg-muted rounded-lg transition-colors cursor-pointer"
           onClick={() => setIsSideBarOpen((prev) => !prev)}
         >
           <PanelRight className="w-6 h-6 text-primary" />
