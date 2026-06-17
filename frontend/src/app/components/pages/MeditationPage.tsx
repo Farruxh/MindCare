@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ArrowLeft, Play, Pause, Wind, Headphones, Heart, Waves } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../../api/axiosInstance.js";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
@@ -10,6 +10,7 @@ export function MeditationPage() {
   const [breathingActive, setBreathingActive] = useState(false);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [sessionTimeElapsed, setSessionTimeElapsed] = useState(0);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   useDocumentTitle("Meditation & Relaxation | MindCare");
 
@@ -444,7 +445,13 @@ export function MeditationPage() {
                         className="w-full h-10"
                         controls 
                         src={track.src}
-                        onPlay={() => handleExerciseView(`Played ${track.title} Relaxing Audio`)}
+                        onPlay={(e) => {
+                          if (currentAudioRef.current && currentAudioRef.current !== e.currentTarget) {
+                            currentAudioRef.current.pause();
+                          }
+                          currentAudioRef.current = e.currentTarget;
+                          handleExerciseView(`Played ${track.title} Relaxing Audio`);
+                        }}
                         />
                       )}
                     </div>
