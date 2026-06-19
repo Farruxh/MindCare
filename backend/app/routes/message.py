@@ -21,7 +21,10 @@ def new_message(chat_id: int, payload: MessageCreate, db: Session = Depends(get_
     last_assessment = get_last_assessment(db, current_user)
     snapshot = get_polarity_snapshot(db, current_user)
 
-    gemini_response = ask_gemini(chatHistory, last_assessment, snapshot)
+    try:
+        gemini_response = ask_gemini(chatHistory, last_assessment, snapshot)
+    except HTTPException:
+        raise HTTPException(status_code=500, detail="Error occurred while getting model response")
 
     ai_message = save_message(db, chat_id, MessageCreate(
         role="model",
