@@ -165,11 +165,23 @@ export function ChatInterface() {
           axiosInstance.post("/api/v1/users/recent-activity/create", { activity_type: "Consulted with AI Assistant" })
         ])
         const chat_id = chatRes.data?.data.chat_id
-        res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
+        try{
+          res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
+        } catch (error: any) {
+          setAlert({ message: error.response.data?.detail || "An error occured", severity: "error" })
+          setIsTyping(false)
+          return
+        }
         navigate(`/assistant/${chat_id}`)
       }
       else {
-        res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
+        try{
+            res = await axiosInstance.post(`/api/v1/messages/${chat_id}/message`, payload)
+        } catch (error: any) {
+          setAlert({ message: error.response.data?.detail || "An error occured", severity: "error" })
+          setIsTyping(false)
+          return
+        }
       }
       const aiMessage: Message = {
         role: res.data?.data.role,
@@ -259,8 +271,8 @@ export function ChatInterface() {
           {chats.map((chat, index) => (
             <button
               key={chat.chat_id}
-              onClick={() => navigate(`/assistant/${chat.chat_id}`)}
-              className="group w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer text-left"
+              onClick={() =>  navigate(`/assistant/${chat.chat_id}`)}
+              className={`group w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted transition-colors cursor-pointer text-left ${Number(chat_id) === chat.chat_id ? "bg-muted" : ""}`}
             >
               <MessageSquare className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span className="text-sm text-foreground truncate flex-1 hover:scale-105 transition-transform">
