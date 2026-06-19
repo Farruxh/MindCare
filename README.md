@@ -101,7 +101,7 @@ MindCare/
 │   │   ├── db.py             # DB connection initializer
 │   │   ├── main.py           # FastAPI main app entry point
 │   │   └── settings.py       # Pydantic Settings & ENV parser
-│   ├── model/                # Local Hugging Face Model files (config, model.safetensors, tokenizer)
+│   ├── tests/                # load testing and Unit testing files
 │   ├── scheduler.py          # Cron/Manual script for weekly report generation
 │   ├── requirements.txt      # Python dependencies
 │   └── pytest.ini            # Test configurations
