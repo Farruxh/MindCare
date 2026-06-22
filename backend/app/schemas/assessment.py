@@ -9,9 +9,6 @@ class AssessmentBase(BaseModel):
     stress_score : int | None = None
     stress_severity : str | None = None
 
-class AssessmentCreate(AssessmentBase):
-    isEmailPreference: bool
-
 class AssessmentResponse(AssessmentBase):
     result_id: int
     created_at: datetime

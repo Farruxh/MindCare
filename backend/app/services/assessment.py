@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 
-from app.schemas.assessment import AssessmentCreate
+from app.schemas.assessment import AssessmentBase
 from app.models.assessment import Assessment_Result
 from app.models.user import User
 from app.settings import settings
@@ -19,10 +19,10 @@ mail_connection_confg = ConnectionConfig(
     MAIL_SSL_TLS = settings.MAIL_SSL_TLS
 )
 
-async def create_assessment(db: Session, assessment_data: AssessmentCreate, current_user: int):
+async def create_assessment(db: Session, assessment_data: AssessmentBase, current_user: int):
     user = db.query(User).filter(User.user_id == current_user).first()
     try:
-        assessment_instance = Assessment_Result(**assessment_data.model_dump(exclude={"isEmailPreference"}))
+        assessment_instance = Assessment_Result(**assessment_data.model_dump())
         assessment_instance.user_id = current_user
         db.add(assessment_instance)
         db.commit()
