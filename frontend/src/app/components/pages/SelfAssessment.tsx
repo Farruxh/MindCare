@@ -121,7 +121,6 @@ export function SelfAssessment() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [started, setStarted] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const isEmailPreference = JSON.parse(localStorage.getItem("isEmailPreference") ?? "true")
   const [answersByType, setAnswersByType] = useState<Record<string, number[]>>({})
   const [showResults, setShowResults] = useState(false)
   const navigate = useNavigate()
@@ -177,12 +176,10 @@ export function SelfAssessment() {
       depression_score: scores["depression"] ?? null,
       depression_severity: severities["depression"] ?? null,
       stress_score: scores["stress"] ?? null,
-      stress_severity: severities["stress"] ?? null,
-      isEmailPreference: isEmailPreference
+      stress_severity: severities["stress"] ?? null
     };
 
     try {
-      console.log(isEmailPreference);
       setLoader(true)
       const [res] = await Promise.all([
         axiosInstance.post("/api/v1/assessments/create", payload),
