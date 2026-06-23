@@ -40,7 +40,7 @@ MindCare is a comprehensive, state-of-the-art mental health companion proposed a
 - **Distance Calculation:** Employs the **Haversine formula** to calculate precise distances between the user's coordinates and registered clinic locations.
 
 ### 6. Profile Customization & Security
-- **Secure Authentication:** Implements JWT-based access and refresh tokens.
+- **Secure Authentication:** Implements JWT-based access and refresh tokens along with refresh-token rotation to reduce the risk of token theft and strengthen overall session security.
 - **Security Updates:** Supports secure password change operations and code-verified password reset via SMTP email routing.
 - **Personalized UI:** Custom dark/light mode provider and email preference toggling.
 
@@ -78,11 +78,11 @@ graph TD
 - **Database ORM:** SQLAlchemy with PostgreSQL (Neon DB compatible)
 - **Database Migrations:** Alembic
 - **Email Server:** FastAPI-Mail (SMTP wrapper)
-- **Authentication:** PyJWT, Cryptography (Argon2 hashing)
+- **Authentication:** JWT-based auth using PyJWT for issuing and validating access/refresh tokens, with password hashing handled by the project’s password-hasher implementation and token signing configured through environment settings
 
 ### Machine Learning / AI
 - **Generative AI:** Google Gemini Developer API (`google-genai` SDK)
-- **Local Classification:** Hugging Face `transformers` pipeline loaded with a local text classification model (`safetensors` format) under `/backend/model`.
+- **Local Classification:** Hugging Face `transformers` pipeline loaded with a local text classification model (`safetensors` format)
 
 ---
 
